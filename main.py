@@ -1,5 +1,12 @@
 import streamlit as st
+from email.mime import audio
+import numpy as np  
+import pandas as pd
+import plotly.graph_objects as go
+import plotly.express as px
+import librosa as lr
 from streamlit_option_menu import option_menu
+import functions
 
 
 st.set_page_config(page_title="Equalizer studio",
@@ -71,5 +78,29 @@ st.session_state["frequency_10"] = freq_10
 
 Signal_type = st.selectbox(
     'what is the required type of the signal?',
-    ('Alphapetic', 'musical', 'Ecg' ,'else'))
+    ('audio','Alphapetic', 'musical', 'Ecg' ,'else'))
 
+
+Uploaded_fig= px.density_heatmap(data_frame=[{}])
+
+uploaded_file =st.file_uploader('upload the signal file',['csv','ogg','wav'] , help='upload your signal file' )
+if (uploaded_file):
+
+    st.audio(uploaded_file, format='audio/wav',start_time=10)
+    # analyising uploaded audio --> getting x ,y
+    audio_amp,sampFreq= lr.load(uploaded_file)
+    time_axis =np.arange(0,len(audio_amp))/sampFreq
+    Uploaded_fig.add_trace(go.Scatter(x=time_axis[:1000], y=audio_amp[:1000],))
+    # updating data in functions
+    functions.variabls.uploaded_audio_time=time_axis
+    functions.variabls.uploaded_audio_time=audio_amp   
+
+
+# FRONT uii
+
+st.title("Equalizer:")
+fig,fig2 = st.columns((2))
+
+with fig:
+    st.write('audio signal')
+    st.write(Uploaded_fig)
