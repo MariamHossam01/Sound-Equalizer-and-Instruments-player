@@ -17,7 +17,8 @@ if uploaded_file is not None:
     radio_button = st.radio("",["Uniform Range Mode", "Music", "Vowels", "Arrhythima", "Optional"])
 
     if radio_button == "Uniform Range Mode":
-        fn.uniform_range_mode(uploaded_file)
+         if file_extension == "wav":
+            fn.uniform_range_mode(uploaded_file)
 
     elif radio_button == "Music":
         pass
@@ -26,7 +27,7 @@ if uploaded_file is not None:
 
     elif radio_button == "Arrhythima":
         if file_extension == "csv":
-            pass
+            fn.ECG_mode(uploaded_file)
     else:
         pass
 else:

@@ -13,6 +13,10 @@ from scipy.signal import find_peaks
 import wave
 import IPython.display as ipd
 
+class variabls:
+    
+    points_num=1000
+
 #  ----------------------------------- TRIAL FOURIER TRANSFORM FUNCTION ---------------------------------------------------
 #-------------------------------------- Fourier Transform on Audio ----------------------------------------------------
 def uniform_range_mode(audio_file):
@@ -76,4 +80,64 @@ def uniform_range_mode(audio_file):
 
     write   ("Equalized_Music.wav", sample_rate, modified_signal_channel) # creates the modified song
     st.audio("Equalized_Music.wav", format='audio/wav')
+
+def ECG_mode(uploaded_file):
+    # ECG Sliders  
+    bracardia   =st.slider('bracardia :beats per minute '   , step=1, max_value=60 , min_value=0   ,value=80)
+    Tachycardia =st.slider('Tachycardia :beats per minute'  , step=1, max_value=170, min_value=100 ,value=80)
+    Arrhythmia  =st.slider('Arrhythmia '                    , step=1, max_value=60 , min_value=30  ,value=0 )
+    # Reading uploaded_file
+    df = pd.read_csv(uploaded_file)
+    uploaded_xaxis=df['time']
+    uploaded_yaxis=df['amp']
+    # Slicing big data
+    if (len(uploaded_xaxis)>variabls.points_num):
+        uploaded_xaxis=uploaded_xaxis[:variabls.points_num]
+    if (len(uploaded_yaxis)>variabls.points_num):
+        uploaded_yaxis=uploaded_yaxis[:variabls.points_num]
+    #Plotting
+    uploaded_fig,uploaded_ax = plt.subplots()
+    uploaded_ax.set_title('The Actual Data')
+    uploaded_ax.plot(uploaded_xaxis,uploaded_yaxis)
+    uploaded_ax.set_xlabel('Time')
+    uploaded_ax.set_ylabel('Amplitude')
+    st.plotly_chart(uploaded_fig)
+
+    uploaded_xaxis= Tachycardia_barcardia (Tachycardia,bracardia,uploaded_xaxis)
+
+    # fourier transorm
+    y_fourier = np.fft.fft(uploaded_yaxis)
+    x_fourier = fftfreq(len(uploaded_xaxis),(uploaded_xaxis[5]-uploaded_xaxis[0])/5) 
+    abs_y_fourier=np.abs(y_fourier) 
+
+    fourier_fig,fourier_ax = plt.subplots()
+    fourier_ax.set_title('fourier')
+    fourier_ax.plot(x_fourier,abs_y_fourier)
+    fourier_ax.set_xlabel('Time')
+    fourier_ax.set_ylabel('Amplitude')
+    st.plotly_chart(fourier_fig)
+
+
+    y_inverse_fourier = np.fft.ifft(y_fourier)
+
+    # Plotting
+    inverse_fig,inverse_ax = plt.subplots()
+    inverse_ax.set_title('fourier')
+    inverse_ax.plot(uploaded_xaxis,y_inverse_fourier)
+    inverse_ax.set_xlabel('Time')
+    inverse_ax.set_ylabel('Amplitude')
+    st.plotly_chart(inverse_fig)
+
+def Tachycardia_barcardia (Tachycardia,bracardia,uploaded_xaxis):
+    scaling_factor=((Tachycardia+bracardia)/2-80)/80
+    new_x=uploaded_xaxis
+    if (scaling_factor>0):
+        new_x = [item * scaling_factor for item in uploaded_xaxis]
+    if (scaling_factor<0):
+        new_x = [item * 1/scaling_factor for item in uploaded_xaxis]
+
+    return new_x
+
+    
+
 

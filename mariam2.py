@@ -10,6 +10,8 @@ from scipy.io import wavfile as wav
 from scipy.fftpack import fft
 from scipy.fft import fft, fftfreq, fftshift
 
+from scipy.misc import electrocardiogram
+
 class variabls:
     
     current_slider_values=np.zeros(50)
@@ -17,10 +19,12 @@ class variabls:
     ranges_values=np.zeros(50)
     uploaded_time=[]
     uploaded_Yamp=[]
+    points_num=1000
 
 
 
 
+#  ----------------------------------- FOURIER TRANSFORM FUNCTION ---------------------------------------------------
 #  ----------------------------------- FOURIER TRANSFORM FUNCTION ---------------------------------------------------
 
 def fourier_transform(df,factor):
@@ -91,6 +95,26 @@ def fourier_inverse_transform(inverse_fourier,df,factor):
     st.plotly_chart(figure,use_container_width=True)
     st.plotly_chart(fig,use_container_width=True)
 
+def save_signal():
+    # define electrocardiogram as ecg model
+    ecg = electrocardiogram()
+    # frequency is 0
+    frequency = 80
+    # calculating time data with ecg size along with frequency
+    time_data = np.arange(ecg.size) / frequency
+    
+    # plotting time and ecg model
+    # plt.plot(time_data[:1000], ecg[:1000])
+    # plt.xlabel("time in seconds")
+    # plt.ylabel("ECG in milli Volts")
+    
+    # display
+    # plt.show()
+    graph = pd.DataFrame({'time':time_data,'amp':ecg})
+    df = pd.DataFrame(graph) 
+    # saving the dataframe 
+    csv_file=df.to_csv()
+    return csv_file
 
 
 # def factor (sampFreq):
@@ -99,11 +123,13 @@ def fourier_inverse_transform(inverse_fourier,df,factor):
 #     x_axis_fourier = fftfreq(len(variabls.uploaded_audio_Yamp),(1/sampFreq))[:len(variabls.uploaded_audio_Yamp)//2] #3shan mbd2sh mn -ve
 #     filtered=[]
 #     filtered_out=[]
-#     for i in range(len(x_axis_fourier)):
+#     for i in range(lltered_out.append(0)
+#             filtered.append(fft_out[i])en(x_axis_fourier)):
 #         if 600<x_axis_fourier[i]<700 or 1620<x_axis_fourier[i]<1820 or 2310<x_axis_fourier[i]<2510:
 #             filtered.append(0)
 #             filtered_out.append(fft_out[i])
 #         else:
-#             filtered_out.append(0)
-#             filtered.append(fft_out[i])
+#             fi
 #             plotting(x_axis_fourier,filtered)
+#     inverse=np.real(np.fft.ifft(filtered,))
+#     inverse_out=np.real(np.fft.ifft(filtered_out,))
