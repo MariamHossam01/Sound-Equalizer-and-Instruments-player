@@ -153,13 +153,25 @@ def plotting_graphs(column,x_axis,y_axis,flag):
 #     pylab.savefig('spectrogram.png')
 #     column.pyplot(pylab)
     #----------------------------------------- Reading Audio
-def read_audio(audio_file):
-    obj = wave.open(audio_file, 'r')
-    sample_rate   = obj.getframerate()                           # number of samples per second
-    n_samples     = obj.getnframes()                             # total number of samples in the whole audio
-    signal_wave   = obj.readframes(-1)                           # amplitude of the sound
-    duration      = n_samples / sample_rate                      # duration of the audio file
-    sound_info    = pylab.fromstring(signal_wave, 'int16')
-    signal_y_axis = np.frombuffer(signal_wave, dtype=np.int16)
-    signal_x_axis = np.linspace(0, duration, len(signal_y_axis))
-    return signal_x_axis, signal_y_axis, sample_rate,  sound_info
+def optional_function(column2,column3,audio_file):
+    signal_x_axis, signal_y_axis, sample_rate ,sound_info = read_audio(audio_file)    # Read Audio File
+
+    yf = rfft(signal_y_axis)                                               # returns complex numbers of the y axis in the data frame
+    xf = rfftfreq(len(signal_y_axis), (signal_x_axis[1]-signal_x_axis[0])) # returns the frequency x axis after fourier transform
+    
+    points_per_freq = len(xf) / (xf[-1]) # duration
+
+    plotting_graphs(column2,signal_x_axis,signal_y_axis,False)
+
+    sub_column1, sub_column2, sub_column3 = st.columns([1,1,1])
+    slider_range   = sub_column1.slider(label='Bass Sound'   , min_value=0, max_value=10, value=1, step=1, key="Bass slider")
+    
+    yf[int(points_per_freq*0)   :int(points_per_freq* 1000)] *= slider_range
+    modified_signal         = irfft(yf)                 # returns the inverse transform after modifying it with sliders
+    modified_signal_channel = np.int16(modified_signal) # returns two channels 
+
+    plotting_graphs(column2,signal_x_axis,modified_signal,False)
+
+    write   (".Equalized_Music.wav", sample_rate, modified_signal_channel) # creates the modified song
+    column2.audio('.piano_timpani_piccolo_out.wav', format='audio/wav')    # displaying the audio before editing
+    column3.audio(".Equalized_Music.wav", format='audio/wav')              # displaying the audio after  editing
