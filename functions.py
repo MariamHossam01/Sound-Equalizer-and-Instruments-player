@@ -12,25 +12,27 @@ from scipy.io.wavfile import write
 from scipy.signal import find_peaks
 import wave
 import IPython.display as ipd
+import pylab
+import os
 
 class variabls:
     
     points_num=1000
-
-#  ----------------------------------- TRIAL FOURIER TRANSFORM FUNCTION ---------------------------------------------------
-#-------------------------------------- Fourier Transform on Audio ----------------------------------------------------
-def uniform_range_mode(column1, column2, column3,audio_file):
-    # audio=audio_file, format='audio/wav'                  # displaying the audio
-    obj = wave.open(audio_file, 'rb')
-                
-                
-    # obj = wave.open(".piano_timpani_piccolo_out.wav", 'rb')                # creating object
-    sample_rate   = obj.getframerate()                                     # number of samples per second
-    n_samples     = obj.getnframes()                                       # total number of samples in the whole audio
-    duration      = n_samples / sample_rate                                # duration of the audio file
-    signal_wave   = obj.readframes(-1)                                     # amplitude of the sound
+#------------------------------------------- Reading Audio ----------------------------------------------------------- 
+def read_audio(audio_file):
+    obj = wave.open(audio_file, 'r')
+    sample_rate   = obj.getframerate()                           # number of samples per second
+    n_samples     = obj.getnframes()                             # total number of samples in the whole audio
+    signal_wave   = obj.readframes(-1)                           # amplitude of the sound
+    duration      = n_samples / sample_rate                      # duration of the audio file
+    sound_info    = pylab.fromstring(signal_wave, 'int16')
     signal_y_axis = np.frombuffer(signal_wave, dtype=np.int16)
     signal_x_axis = np.linspace(0, duration, len(signal_y_axis))
+    return signal_x_axis, signal_y_axis, sample_rate,  sound_info
+
+#-------------------------------------- UNIFORM RANGE MODE FUNCTION ----------------------------------------------------
+def uniform_range_mode(column2, column3, audio_file, show_spectrogram):
+    signal_x_axis, signal_y_axis, sample_rate ,sound_info = read_audio(audio_file)    # Read Audio File
 
 
     yf = rfft(signal_y_axis)                                               # returns complex numbers of the y axis in the data frame
@@ -38,7 +40,11 @@ def uniform_range_mode(column1, column2, column3,audio_file):
     
     points_per_freq = len(xf) / (xf[-1])  # duration
 
-    plotting_graphs(column2,signal_x_axis, signal_y_axis, False)
+    if (show_spectrogram):
+        pylab.specgram(sound_info, Fs=sample_rate)
+        column2.pyplot(pylab)
+    else:
+        plotting_graphs(column2,signal_x_axis,signal_y_axis,False)
 
     columns=st.columns(10)
     index=0
@@ -49,20 +55,26 @@ def uniform_range_mode(column1, column2, column3,audio_file):
         index +=1
         list_of_sliders_values.append(sliders)
 
-    for indexxx,value in enumerate(list_of_sliders_values):
-        yf[int(points_per_freq * 1000 * indexxx)  : int(points_per_freq * 1000 * indexxx + points_per_freq * 1000)] *= value
+    for index2,value in enumerate(list_of_sliders_values):
+        yf[int(points_per_freq * 1000 * index2)  : int(points_per_freq * 1000 * index2 + points_per_freq * 1000)] *= value
     else:
         pass
     
     modified_signal         = irfft(yf)                 # returns the inverse transform after modifying it with sliders 
     modified_signal_channel = np.int16(modified_signal) # returns two channels
     
-    plotting_graphs(column3,signal_x_axis, modified_signal, False)
-
     write(".Equalized_Music.wav", sample_rate, modified_signal_channel)   # creates the modified song
+    
+    if (show_spectrogram):
+        # plot_spectrogram(column3,".Equalized_Music.wav")
+        pylab.specgram(modified_signal_channel, Fs=sample_rate)
+        column3.pyplot(pylab)
+    else:
+        plotting_graphs(column3,signal_x_axis,modified_signal,False)
+
     column2.audio  (audio_file, format='audio/wav') # displaying the audio before editing
     column3.audio(".Equalized_Music.wav", format='audio/wav')             # displaying the audio after editing
-    #-------------------------------------------------------
+#-------------------------------------- ARRYTHMIA FUNCTION ----------------------------------------------------
 def ECG_mode(uploaded_file):
     # ECG Sliders  
     bracardia   =st.slider('bracardia :beats per minute '   , step=1, max_value=60 , min_value=0   ,value=80)
@@ -120,18 +132,34 @@ def Tachycardia_barcardia (Tachycardia,bracardia,uploaded_xaxis):
 
     return new_x
 
-#------------------
+#------------------------------------------ PLOTTING FUNCTION -------------------------------------------------------
 def plotting_graphs(column,x_axis,y_axis,flag):
-
     fig, axs = plt.subplots()
     fig.set_size_inches(6,3)
     plt.plot(x_axis,y_axis)
     if flag == True:
-        plt.xlim(45, 55)
-        plt.xlabel("Time in s")
-        plt.ylabel("ECG in mV")
-        
+        pass
+        # plt.xlim(45, 55)
+        # plt.xlabel("Time in s")
+        # plt.ylabel("ECG in mV")     
     column.plotly_chart(fig)
-
-
-
+    #--------------------------------------------- PLOTTING SPECTROGRAMS ---------------------------------
+# def plot_spectrogram(column,audio_file):
+#     signal_x_axis, signal_y_axis, sample_rate,  sound_info = read_audio(audio_file)
+#     pylab.figure(num=None, figsize=(19, 12))
+#     pylab.subplot(111)
+#     # pylab.title('spectrogram of %r' % wav_file)
+#     pylab.specgram(sound_info, Fs=sample_rate)
+#     pylab.savefig('spectrogram.png')
+#     column.pyplot(pylab)
+    #----------------------------------------- Reading Audio
+def read_audio(audio_file):
+    obj = wave.open(audio_file, 'r')
+    sample_rate   = obj.getframerate()                           # number of samples per second
+    n_samples     = obj.getnframes()                             # total number of samples in the whole audio
+    signal_wave   = obj.readframes(-1)                           # amplitude of the sound
+    duration      = n_samples / sample_rate                      # duration of the audio file
+    sound_info    = pylab.fromstring(signal_wave, 'int16')
+    signal_y_axis = np.frombuffer(signal_wave, dtype=np.int16)
+    signal_x_axis = np.linspace(0, duration, len(signal_y_axis))
+    return signal_x_axis, signal_y_axis, sample_rate,  sound_info
