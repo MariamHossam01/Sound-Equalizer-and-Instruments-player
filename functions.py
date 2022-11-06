@@ -85,7 +85,19 @@ def ECG_mode(uploaded_file):
     # ECG Sliders  
     bracardia   =st.slider('bracardia :beats per minute '   , step=1, max_value=60 , min_value=0   ,value=80)
     Tachycardia =st.slider('Tachycardia :beats per minute'  , step=1, max_value=170, min_value=100 ,value=80)
-    Arrhythmia  =st.slider('Arrhythmia '                    , step=1, max_value=60 , min_value=30  ,value=0 )
+    Arrhythmia  =st.slider('Arrhythmia '                    , step=1, max_value=10 , min_value=0  ,value=0 )
+    # Arrhythmia  =st.slider('Arrhythmia '                    , step=1, max_value=60 , min_value=30  ,value=0 )
+    # Arrhythmia  =st.slider('Arrhythmia '                    , step=1, max_value=60 , min_value=30  ,value=0 )
+    # factor5  =st.slider('Arrhythmia '                    , step=1, max_value=60 , min_value=30  ,value=0 )
+    # factor4  =st.slider('Arrhythmia '                    , step=1, max_value=60 , min_value=30  ,value=0 )
+    # factor3  =st.slider('Arrhythmia '                    , step=1, max_value=60 , min_value=30  ,value=0 )
+    # factor2  =st.slider('Arrhythmia '                    , step=1, max_value=60 , min_value=30  ,value=0 )
+    # factor1  =st.slider('Arrhthmia '                    , step=1, max_value=60 , min_value=30  ,value=0 )
+
+
+
+
+
     # Reading uploaded_file
     df = pd.read_csv(uploaded_file)
     uploaded_xaxis=df['time']
@@ -103,20 +115,22 @@ def ECG_mode(uploaded_file):
     uploaded_ax.set_ylabel('Amplitude')
     st.plotly_chart(uploaded_fig)
 
-    uploaded_xaxis= Tachycardia_barcardia (Tachycardia,bracardia,uploaded_xaxis)
+    # uploaded_xaxis= Tachycardia_barcardia (Tachycardia,bracardia,uploaded_xaxis)
 
     # fourier transorm
     y_fourier = np.fft.fft(uploaded_yaxis)
     x_fourier = fftfreq(len(uploaded_xaxis),(uploaded_xaxis[5]-uploaded_xaxis[0])/5) 
-    abs_y_fourier=np.abs(y_fourier) 
+    
+    y_fourier=arrhythmia (Arrhythmia,y_fourier)
+    abs_y_fourier=np.abs(y_fourier)
 
+    length=(len( y_fourier ))//2
     fourier_fig,fourier_ax = plt.subplots()
     fourier_ax.set_title('fourier')
-    fourier_ax.plot(x_fourier,abs_y_fourier)
+    fourier_ax.plot(x_fourier[:length],abs_y_fourier[:length])
     fourier_ax.set_xlabel('Time')
     fourier_ax.set_ylabel('Amplitude')
     st.plotly_chart(fourier_fig)
-
 
     y_inverse_fourier = np.fft.ifft(y_fourier)
 
@@ -137,6 +151,16 @@ def Tachycardia_barcardia (Tachycardia,bracardia,uploaded_xaxis):
         new_x = [item * 1/scaling_factor for item in uploaded_xaxis]
 
     return new_x
+
+def arrhythmia (arrhythmia,y_fourier):
+    new_y=y_fourier
+    df = pd.read_csv('arrhythmia_components.csv')
+    sub=df['sub']
+    abs_sub=df['abs_sub']
+    result = [item * arrhythmia for item in abs_sub]
+    new_y=np.add(y_fourier,result)
+
+    return new_y
 
     
 
