@@ -75,11 +75,10 @@ def uniform_range_mode(column2, column3, audio_file, show_spectrogram):
     column2.audio  (audio_file, format='audio/wav') # displaying the audio before editing
     column3.audio(".Equalized_Music.wav", format='audio/wav')             # displaying the audio after editing
 #-------------------------------------- ARRYTHMIA FUNCTION ----------------------------------------------------
-def ECG_mode(uploaded_file):
-    # ECG Sliders  
-    # bracardia   =st.slider('bracardia :beats per minute '   , step=1, max_value=60 , min_value=0   ,value=80)
-    # Tachycardia =st.slider('Tachycardia :beats per minute'  , step=1, max_value=170, min_value=100 ,value=80)
-    Arrhythmia  =st.slider('Arrhythmia '                    , step=1, max_value=100 , min_value=0  ,value=0 )
+def ECG_mode(uploaded_file, show_spectrogram):
+
+    # ------------ECG Sliders  
+    Arrhythmia  =st.slider('Arrhythmia mode'                    , step=1, max_value=100 , min_value=-100  ,value=0 )
     Arrhythmia/=100
     # Reading uploaded_file
     df = pd.read_csv(uploaded_file)
@@ -90,9 +89,6 @@ def ECG_mode(uploaded_file):
         uploaded_xaxis=uploaded_xaxis[:variabls.points_num]
     if (len(uploaded_yaxis)>variabls.points_num):
         uploaded_yaxis=uploaded_yaxis[:variabls.points_num]
-
-
-    # uploaded_xaxis= Tachycardia_barcardia (Tachycardia,bracardia,uploaded_xaxis)
 
     # fourier transorm
     y_fourier = np.fft.fft(uploaded_yaxis)
@@ -105,13 +101,17 @@ def ECG_mode(uploaded_file):
 
     y_inverse_fourier = np.fft.ifft(y_fourier)
     #Plotting
+    column1,column2,column3=st.columns([3,3,3])
+
     uploaded_fig,uploaded_ax = plt.subplots()
-    uploaded_ax.set_title('The Actual Data')
+    uploaded_ax.set_title('ECG signal ')
+    uploaded_ax.plot(uploaded_xaxis,y_inverse_fourier)  
     uploaded_ax.plot(uploaded_xaxis,uploaded_yaxis)
-    uploaded_ax.plot(uploaded_xaxis,y_inverse_fourier)
-    uploaded_ax.set_xlabel('Time')
-    uploaded_ax.set_ylabel('Amplitude')
+    uploaded_ax.plot(uploaded_xaxis,y_inverse_fourier)  
+    uploaded_ax.set_xlabel('Time ')
+    uploaded_ax.set_ylabel('Amplitude (mv)')
     st.plotly_chart(uploaded_fig)
+ 
 
 
 def Tachycardia_barcardia (Tachycardia,bracardia,uploaded_xaxis):
@@ -138,7 +138,7 @@ def arrhythmia (arrhythmia,y_fourier):
 #------------------
 #------------------------------------------ PLOTTING FUNCTION -------------------------------------------------------
 def plotting_graphs(column,x_axis,y_axis,flag):
-    fig, axs = plt.subplots()
+    fig,axs = plt.subplots()
     fig.set_size_inches(6,3)
     plt.plot(x_axis,y_axis)
     if flag == True:
