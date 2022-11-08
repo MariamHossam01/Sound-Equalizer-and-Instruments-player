@@ -27,7 +27,8 @@ if uploaded_file is not None:
     elif select_mode == "Music":
         pass
     elif select_mode == "Vowels":
-        pass
+        if file_extension == "wav":
+            fn.vowels_mode(uploaded_file,column2,column3)
 
     elif select_mode == "Arrhythima":
           if file_extension == "csv":

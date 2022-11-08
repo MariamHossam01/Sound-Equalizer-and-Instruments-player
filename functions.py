@@ -3,26 +3,23 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import streamlit_vertical_slider  as svs
-from scipy.fftpack import fft
-from scipy.fft import fft, fftfreq, fftshift
 from scipy.fft import rfft, rfftfreq
 from scipy.fft import irfft
 from scipy.io.wavfile import write
-from scipy.signal import find_peaks
 import wave
-import IPython.display as ipd
 import pylab
-import os
 import librosa
 import librosa.display
 import time
 import altair as alt
 import pandas as pd
-import plotly.graph_objects as go
+import wavio
 class variabls:
     
     points_num=1000
+    vowel_freq_ae=[860,2850]
+    vowel_freq_a=[850,2800]
+    slider_tuble=(vowel_freq_ae,vowel_freq_a)
 #------------------------------------------- Reading Audio ----------------------------------------------------------- 
 def read_audio(audio_file):
     obj = wave.open(audio_file, 'r')
@@ -254,6 +251,43 @@ def plot_spectrogram(column,audio_file):
     ax.set(title='')
     fig.colorbar(img, ax=ax, format="%+2.f dB")
     column.pyplot(fig)
+
+def vowels_mode(uploaded_file,column_in,column_out):
+    ae_freq_value=st.slider('ae',min_value=0,max_value=1,value=1,key=1)
+    a_freq_value=st.slider('ae',min_value=0,max_value=1,value=1,key=2)
+    signal_x_axis, signal_y_axis, sample_rate ,sound_info = read_audio(uploaded_file)    # Read Audio File
+
+
+    y_axis_fourier = np.fft.fft(signal_y_axis)                       
+    x_axis_fourier = np.fft.fftfreq(len(signal_y_axis), (signal_x_axis[1]-signal_x_axis[0]))
+    st.write(len(y_axis_fourier))
+    
+    filtered_fft=apply_slider_value(x_axis_fourier,y_axis_fourier,ae_freq_value,a_freq_value)
+    st.write(len(filtered_fft))
+    inverse=(np.fft.ifft(filtered_fft,))
+    plotting_graphs(column_in,signal_x_axis,signal_y_axis)
+    plotting_graphs(column_out,x_axis_fourier*2,np.real(inverse))
+    wavio.write("myfile.wav", inverse, sample_rate//2, sampwidth=1)
+    st.audio("myfile.wav", format='audio/wav')
+
+def apply_slider_value(x_axis_fourier,y_axis_fourier,ae_freq_value,a_freq_value):
+    ae_freq_value = 0.01 if ae_freq_value == 0 else ae_freq_value 
+    a_freq_value = 0.01 if a_freq_value == 0 else a_freq_value 
+    slider_values=[ae_freq_value,a_freq_value]
+    filtered_fft=y_axis_fourier
+    for slider_counter in range(len(slider_values)):
+        min_value=variabls.slider_tuble[slider_counter][0]
+        max_value=variabls.slider_tuble[slider_counter][1]
+        for i in range(len(x_axis_fourier)):
+            if min_value<=x_axis_fourier[i]<=max_value:#ae
+                filtered_fft[i]+=y_axis_fourier[i]*slider_values[slider_counter]
+            else:
+                filtered_fft[i]+=y_axis_fourier[i]*1000
+    return(filtered_fft/3)
+
+
+
+
 # def dynamic():
 #     test_music1, sr1 = librosa.load("StarWars3.wav")
 #     d=(pd.DataFrame(test_music1,columns=['amp']))
