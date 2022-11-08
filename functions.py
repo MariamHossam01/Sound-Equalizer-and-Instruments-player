@@ -104,7 +104,7 @@ def ECG_mode(uploaded_file, show_spectrogram):
         uploaded_yaxis=uploaded_yaxis[:variabls.points_num]
     # Plotting input signal
     if (show_spectrogram):
-            pylab.specgram(uploaded_yaxis, Fs=samp_rate)
+            pylab.specgram(uploaded_yaxis[50:950], Fs=samp_rate)
             input_col.pyplot(pylab)
     else:
         with input_col:
@@ -117,16 +117,17 @@ def ECG_mode(uploaded_file, show_spectrogram):
 
     # fourier transorm
     y_fourier = np.fft.fft(uploaded_yaxis)
-    y_fourier=arrhythmia (Arrhythmia,y_fourier)
     
+    y_fourier=arrhythmia (Arrhythmia,y_fourier)
     # abs_y_fourier=np.abs(y_fourier)
     # x_fourier = fftfreq(len(uploaded_xaxis),(uploaded_xaxis[5]-uploaded_xaxis[0])/5) 
     # length=(len( y_fourier ))//2
+
+
     y_inverse_fourier = np.fft.ifft(y_fourier)
+
     if (show_spectrogram):
-            y_inverse_fourier=np.abs(y_inverse_fourier)
-            # x_fourier = fftfreq(len(uploaded_xaxis),(uploaded_xaxis[5]-uploaded_xaxis[0])/5) 
-            pylab.specgram(y_inverse_fourier, Fs=samp_rate)
+            pylab.specgram(y_inverse_fourier[50:950], Fs=samp_rate)
             output_col.pyplot(pylab)
     else:
         with output_col:
@@ -155,8 +156,7 @@ def arrhythmia (arrhythmia,y_fourier):
     abs_sub=df['abs_sub']
     result = [item * arrhythmia for item in abs_sub]
     new_y=np.add(y_fourier,result)
-    print(arrhythmia)
-    print(np.subtract(y_fourier,new_y))
+
     return new_y
 #------------------
 #------------------------------------------ PLOTTING FUNCTION -------------------------------------------------------
@@ -202,7 +202,6 @@ def optional_function(column2,column3,audio_file):
     write   (".Equalized_Music.wav", sample_rate, modified_signal_channel) # creates the modified song
     column2.audio('.piano_timpani_piccolo_out.wav', format='audio/wav')    # displaying the audio before editing
     column3.audio(".Equalized_Music.wav", format='audio/wav')              # displaying the audio after  editing
-
 def plot_animation(df):
     lines = alt.Chart(df).mark_line().encode(
         x=alt.X('time', axis=alt.Axis(title='date')),
@@ -215,12 +214,14 @@ def plot_animation(df):
 def Dynamic_graph(signal_x_axis, signal_y_axis,button_name ):
 
     # start of dynamic plotting
+    resize = alt.selection_interval(bind='scales')
 
     df = pd.DataFrame({'time': signal_x_axis[::1500], 'amplitude': signal_y_axis[:: 1500]}, columns=['time', 'amplitude'])
+    
     lines = alt.Chart(df).mark_line().encode( x=alt.X('0:T', axis=alt.Axis(title='time')),
-                                              y=alt.Y('1:Q', axis=alt.Axis(title='value'))).properties(width=600,height=300)
-
-
+                                              y=alt.Y('1:Q', axis=alt.Axis(title='value'))).properties(width=600,height=300).add_selection(
+        resize
+    )
 
     N = df.shape[0]  # number of elements in the dataframe
     burst = 6        # number of elements (months) to add to the plot
@@ -228,7 +229,7 @@ def Dynamic_graph(signal_x_axis, signal_y_axis,button_name ):
 
     # Plot Animation
     line_plot = st.altair_chart(lines)
-    start_btn = st.button(label=button_name)
+    start_btn = st.checkbox(label=button_name)
 
 
 
@@ -242,6 +243,35 @@ def Dynamic_graph(signal_x_axis, signal_y_axis,button_name ):
                 size = N - 1
             time.sleep(.00000000001)
     # end of dynamic plotting
+# def initial_time_graph(df1,df2):
+#     df1 = pd.DataFrame({'time': signal_x_axis[::1500], 'amplitude': signal_y_axis[:: 1500]}, columns=['time', 'amplitude'])
+#     df2= pd.DataFrame({'time': signal_x_axis[::1500], 'amplitude': signal_y_axis[:: 1500]}, columns=['time', 'amplitude'])
+
+#     resize = alt.selection_interval(bind='scales')
+#     chart1 = alt.Chart(df1).mark_line().encode(
+#     x=alt.X('time:T', axis=alt.Axis(title='date',labels=False)),
+#     y=alt.Y('signal:Q',axis=alt.Axis(title='value'))
+#     ).properties(
+#         width=600,
+#         height=300
+#     ).add_selection(
+#         resize
+#     )
+
+#     chart2 = alt.Chart(df2).mark_line().encode(
+#         x=alt.X('time:T', axis=alt.Axis(title='date',labels=False)),
+#         y=alt.Y('signal:Q',axis=alt.Axis(title='value'))
+#     ).properties(
+#         width=600,
+#         height=300
+#     ).add_selection(
+#         resize
+#     )
+
+
+#     chart=alt.concat(chart1, chart2)
+#     return chart
+
 def plot_spectrogram(column,audio_file):
     y, sr = librosa.load(audio_file)
     D = librosa.stft(y)  # STFT of y
