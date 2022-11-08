@@ -14,6 +14,10 @@ import wave
 import IPython.display as ipd
 import pylab
 import os
+import librosa
+import librosa.display
+import time
+import altair as alt
 
 class variabls:
     
@@ -34,7 +38,6 @@ def read_audio(audio_file):
 def uniform_range_mode(column2, column3, audio_file, show_spectrogram):
     signal_x_axis, signal_y_axis, sample_rate ,sound_info = read_audio(audio_file)    # Read Audio File
 
-
     yf = rfft(signal_y_axis)                                               # returns complex numbers of the y axis in the data frame
     xf = rfftfreq(len(signal_y_axis), (signal_x_axis[1]-signal_x_axis[0])) # returns the frequency x axis after fourier transform
     
@@ -44,7 +47,9 @@ def uniform_range_mode(column2, column3, audio_file, show_spectrogram):
         pylab.specgram(sound_info, Fs=sample_rate)
         column2.pyplot(pylab)
     else:
-        plotting_graphs(column2,signal_x_axis,signal_y_axis,False)
+        # plotting_graphs(column2,signal_x_axis,signal_y_axis,False)
+        with column2 :
+             Dynamic_graph(signal_x_axis,signal_y_axis,'start1')
 
     columns=st.columns(10)
     index=0
@@ -70,13 +75,16 @@ def uniform_range_mode(column2, column3, audio_file, show_spectrogram):
         pylab.specgram(modified_signal_channel, Fs=sample_rate)
         column3.pyplot(pylab)
     else:
-        plotting_graphs(column3,signal_x_axis,modified_signal,False)
+        # plotting_graphs(column3,signal_x_axis,modified_signal,False)
+        with column3 :
+            Dynamic_graph(signal_x_axis,modified_signal,'start2')
 
     column2.audio  (audio_file, format='audio/wav') # displaying the audio before editing
     column3.audio(".Equalized_Music.wav", format='audio/wav')             # displaying the audio after editing
+    # Dynamic_graph(signal_x_axis, signal_y_axis )
 #-------------------------------------- ARRYTHMIA FUNCTION ----------------------------------------------------
 def ECG_mode(uploaded_file, show_spectrogram):
-
+    input_col, output_col=st.columns([1,1])
     # ------------ECG Sliders  
     Arrhythmia  =st.slider('Arrhythmia mode'                    , step=1, max_value=100 , min_value=-100  ,value=0 )
     Arrhythmia/=100
@@ -105,15 +113,13 @@ def ECG_mode(uploaded_file, show_spectrogram):
 
     uploaded_fig,uploaded_ax = plt.subplots()
     uploaded_ax.set_title('ECG signal ')
-    uploaded_ax.plot(uploaded_xaxis,y_inverse_fourier)  
-    uploaded_ax.plot(uploaded_xaxis,uploaded_yaxis)
-    uploaded_ax.plot(uploaded_xaxis,y_inverse_fourier)  
+    # uploaded_ax.plot(uploaded_xaxis,y_inverse_fourier)  
+    uploaded_ax.plot(uploaded_xaxis[50:950],uploaded_yaxis[50:950])
+    uploaded_ax.plot(uploaded_xaxis[50:950],y_inverse_fourier[50:950])  
     uploaded_ax.set_xlabel('Time ')
     uploaded_ax.set_ylabel('Amplitude (mv)')
     st.plotly_chart(uploaded_fig)
  
-
-
 def Tachycardia_barcardia (Tachycardia,bracardia,uploaded_xaxis):
     scaling_factor=((Tachycardia+bracardia)/2-80)/80
     new_x=uploaded_xaxis
@@ -133,8 +139,6 @@ def arrhythmia (arrhythmia,y_fourier):
     new_y=np.add(y_fourier,result)
 
     return new_y
-
-    
 #------------------
 #------------------------------------------ PLOTTING FUNCTION -------------------------------------------------------
 def plotting_graphs(column,x_axis,y_axis,flag):
@@ -179,3 +183,45 @@ def optional_function(column2,column3,audio_file):
     write   (".Equalized_Music.wav", sample_rate, modified_signal_channel) # creates the modified song
     column2.audio('.piano_timpani_piccolo_out.wav', format='audio/wav')    # displaying the audio before editing
     column3.audio(".Equalized_Music.wav", format='audio/wav')              # displaying the audio after  editing
+
+def plot_animation(df):
+    lines = alt.Chart(df).mark_line().encode(
+        x=alt.X('time', axis=alt.Axis(title='date')),
+        y=alt.Y('amplitude', axis=alt.Axis(title='value')),
+    ).properties(
+        width=600,
+        height=300
+    )
+    return lines
+def Dynamic_graph(signal_x_axis, signal_y_axis,button_name ):
+
+    # start of dynamic plotting
+
+    df = pd.DataFrame({'time': signal_x_axis[::1500], 'amplitude': signal_y_axis[:: 1500]}, columns=['time', 'amplitude'])
+    lines = alt.Chart(df).mark_line().encode( x=alt.X('0:T', axis=alt.Axis(title='time')),
+                                              y=alt.Y('1:Q', axis=alt.Axis(title='value'))).properties(width=600,height=300)
+
+
+
+    N = df.shape[0]  # number of elements in the dataframe
+    burst = 6        # number of elements (months) to add to the plot
+    size = burst     # size of the current dataset
+
+    # Plot Animation
+    line_plot = st.altair_chart(lines)
+    start_btn = st.button(label=button_name)
+
+
+
+    if start_btn:
+        for i in range(1, N):
+            step_df = df.iloc[0:size]
+            lines = plot_animation(step_df)
+            line_plot = line_plot.altair_chart(lines)
+            size = i + burst
+            if size >= N:
+                size = N - 1
+            time.sleep(.00000000001)
+    # end of dynamic plotting
+
+

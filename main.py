@@ -14,7 +14,7 @@ with st.sidebar:
     show_spectrogram = st.checkbox("Show Spectrogram")
     # ------------------------------------------------------------------------------------ Calling Main Functions
 
-column1,column2,column3=st.columns([1,3,3])
+column2,column3=st.columns([3,3])
 if uploaded_file is not None:
     file_name = uploaded_file.type
     file_extension = file_name[-3:]
