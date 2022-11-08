@@ -84,7 +84,7 @@ def uniform_range_mode(column2, column3, audio_file, show_spectrogram):
     # Dynamic_graph(signal_x_axis, signal_y_axis )
 #-------------------------------------- ARRYTHMIA FUNCTION ----------------------------------------------------
 def ECG_mode(uploaded_file, show_spectrogram):
-    input_col, output_col=st.columns([1,1])
+
     # ------------ECG Sliders  
     Arrhythmia  =st.slider('Arrhythmia mode'                    , step=1, max_value=100 , min_value=-100  ,value=0 )
     Arrhythmia/=100
@@ -92,33 +92,50 @@ def ECG_mode(uploaded_file, show_spectrogram):
     df = pd.read_csv(uploaded_file)
     uploaded_xaxis=df['time']
     uploaded_yaxis=df['amp']
+    smap_time=uploaded_xaxis[1]-uploaded_xaxis[0]
+    samp_rate=1/smap_time
+    input_col, output_col=st.columns([1,1])
+
     # Slicing big data
     if (len(uploaded_xaxis)>variabls.points_num):
         uploaded_xaxis=uploaded_xaxis[:variabls.points_num]
     if (len(uploaded_yaxis)>variabls.points_num):
         uploaded_yaxis=uploaded_yaxis[:variabls.points_num]
+    # Plotting input signal
+    if (show_spectrogram):
+            pylab.specgram(uploaded_yaxis, Fs=samp_rate)
+            input_col.pyplot(pylab)
+    else:
+        with input_col:
+            uploaded_fig,uploaded_ax = plt.subplots()
+            uploaded_ax.set_title('ECG input ')
+            uploaded_ax.plot(uploaded_xaxis[50:950],uploaded_yaxis[50:950])
+            uploaded_ax.set_xlabel('Time ')
+            uploaded_ax.set_ylabel('Amplitude (mv)')
+            st.plotly_chart(uploaded_fig)
 
     # fourier transorm
     y_fourier = np.fft.fft(uploaded_yaxis)
-    
     y_fourier=arrhythmia (Arrhythmia,y_fourier)
+    
     # abs_y_fourier=np.abs(y_fourier)
     # x_fourier = fftfreq(len(uploaded_xaxis),(uploaded_xaxis[5]-uploaded_xaxis[0])/5) 
     # length=(len( y_fourier ))//2
-
-
     y_inverse_fourier = np.fft.ifft(y_fourier)
-    #Plotting
-    column1,column2,column3=st.columns([3,3,3])
-
-    uploaded_fig,uploaded_ax = plt.subplots()
-    uploaded_ax.set_title('ECG signal ')
-    # uploaded_ax.plot(uploaded_xaxis,y_inverse_fourier)  
-    uploaded_ax.plot(uploaded_xaxis[50:950],uploaded_yaxis[50:950])
-    uploaded_ax.plot(uploaded_xaxis[50:950],y_inverse_fourier[50:950])  
-    uploaded_ax.set_xlabel('Time ')
-    uploaded_ax.set_ylabel('Amplitude (mv)')
-    st.plotly_chart(uploaded_fig)
+    if (show_spectrogram):
+            y_inverse_fourier=np.abs(y_inverse_fourier)
+            # x_fourier = fftfreq(len(uploaded_xaxis),(uploaded_xaxis[5]-uploaded_xaxis[0])/5) 
+            pylab.specgram(y_inverse_fourier, Fs=samp_rate)
+            output_col.pyplot(pylab)
+    else:
+        with output_col:
+            inverse_fig,inverse_ax = plt.subplots()
+            inverse_ax.set_title('ECG output ')
+            inverse_ax.plot(uploaded_xaxis[50:950],y_inverse_fourier[50:950])  
+            inverse_ax.set_xlabel('Time ')
+            inverse_ax.set_ylabel('Amplitude (mv)')
+            st.plotly_chart(inverse_fig)
+        
  
 def Tachycardia_barcardia (Tachycardia,bracardia,uploaded_xaxis):
     scaling_factor=((Tachycardia+bracardia)/2-80)/80
@@ -137,7 +154,8 @@ def arrhythmia (arrhythmia,y_fourier):
     abs_sub=df['abs_sub']
     result = [item * arrhythmia for item in abs_sub]
     new_y=np.add(y_fourier,result)
-
+    print(arrhythmia)
+    print(np.subtract(y_fourier,new_y))
     return new_y
 #------------------
 #------------------------------------------ PLOTTING FUNCTION -------------------------------------------------------
