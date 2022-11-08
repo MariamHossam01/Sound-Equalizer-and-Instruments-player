@@ -18,7 +18,8 @@ import librosa
 import librosa.display
 import time
 import altair as alt
-
+import pandas as pd
+import plotly.graph_objects as go
 class variabls:
     
     points_num=1000
@@ -35,7 +36,7 @@ def read_audio(audio_file):
     return signal_x_axis, signal_y_axis, sample_rate,  sound_info
 
 #-------------------------------------- UNIFORM RANGE MODE FUNCTION ----------------------------------------------------
-def uniform_range_mode(column2, column3, audio_file, show_spectrogram):
+def uniform_range_mode(column2, column3, audio_file, show_spectrogram,file_name):
     signal_x_axis, signal_y_axis, sample_rate ,sound_info = read_audio(audio_file)    # Read Audio File
 
     yf = rfft(signal_y_axis)                                               # returns complex numbers of the y axis in the data frame
@@ -44,8 +45,10 @@ def uniform_range_mode(column2, column3, audio_file, show_spectrogram):
     points_per_freq = len(xf) / (xf[-1])  # duration
 
     if (show_spectrogram):
-        pylab.specgram(sound_info, Fs=sample_rate)
-        column2.pyplot(pylab)
+        # pylab.specgram(sound_info, Fs=sample_rate)
+        # column2.pyplot(pylab)
+        plot_spectrogram(column2,file_name)
+
     else:
         # plotting_graphs(column2,signal_x_axis,signal_y_axis,False)
         with column2 :
@@ -72,8 +75,9 @@ def uniform_range_mode(column2, column3, audio_file, show_spectrogram):
     
     if (show_spectrogram):
         # plot_spectrogram(column3,".Equalized_Music.wav")
-        pylab.specgram(modified_signal_channel, Fs=sample_rate)
-        column3.pyplot(pylab)
+        # pylab.specgram(modified_signal_channel, Fs=sample_rate)
+        # column3.pyplot(pylab)
+        plot_spectrogram(column3,".Equalized_Music.wav")
     else:
         # plotting_graphs(column3,signal_x_axis,modified_signal,False)
         with column3 :
@@ -241,5 +245,28 @@ def Dynamic_graph(signal_x_axis, signal_y_axis,button_name ):
                 size = N - 1
             time.sleep(.00000000001)
     # end of dynamic plotting
-
-
+def plot_spectrogram(column,audio_file):
+    y, sr = librosa.load(audio_file)
+    D = librosa.stft(y)  # STFT of y
+    S_db = librosa.amplitude_to_db(np.abs(D), ref=np.max)
+    fig, ax = plt.subplots()
+    img = librosa.display.specshow(S_db, x_axis='time', y_axis='linear', ax=ax)
+    ax.set(title='')
+    fig.colorbar(img, ax=ax, format="%+2.f dB")
+    column.pyplot(fig)
+# def dynamic():
+#     test_music1, sr1 = librosa.load("StarWars3.wav")
+#     d=(pd.DataFrame(test_music1,columns=['amp']))
+#     data=st.empty()
+#     def make_chart(df,ymin, ymax):
+#         fig = go.Figure(layout_yaxis_range=[ymin, ymax])
+#         fig.add_trace(go.Scatter(x=(df.index/300000),y=df['amp']))
+#         fig.update_layout(width=800, height=570, xaxis_title='time',yaxis_title='amplitude')
+#     ymax = max(d['amp'])
+#     ymin = min(d['amp'])
+#     n = len(d)
+#     for i in range(0,n+10000, 200):
+#         df_tmp = (d.iloc[i:i+10000, :])
+#         with data:
+#             make_chart(df_tmp, ymin, ymax)
+#         time.sleep(0.00001)

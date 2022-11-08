@@ -16,11 +16,12 @@ with st.sidebar:
 
 column2,column3=st.columns([3,3])
 if uploaded_file is not None:
-    file_name = uploaded_file.type
-    file_extension = file_name[-3:]
+    file_type = uploaded_file.type
+    file_name = uploaded_file.name
+    file_extension = file_type[-3:]
     if select_mode == "Uniform Range Mode":
         if file_extension == "wav":
-            fn.uniform_range_mode(column2, column3, uploaded_file, show_spectrogram)
+            fn.uniform_range_mode(column2, column3, uploaded_file, show_spectrogram,file_name)
             # fn.plot_spectrogram(column2,uploaded_file)
 
     elif select_mode == "Music":
