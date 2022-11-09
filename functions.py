@@ -23,6 +23,7 @@ import plotly.graph_objects as go
 class variabls:
     
     points_num=1000
+    start=0
 #------------------------------------------- Reading Audio ----------------------------------------------------------- 
 def read_audio(audio_file):
     obj = wave.open(audio_file, 'r')
@@ -43,17 +44,6 @@ def uniform_range_mode(column2, column3, audio_file, show_spectrogram,file_name)
     xf = rfftfreq(len(signal_y_axis), (signal_x_axis[1]-signal_x_axis[0])) # returns the frequency x axis after fourier transform
     
     points_per_freq = len(xf) / (xf[-1])  # duration
-
-    if (show_spectrogram):
-        # pylab.specgram(sound_info, Fs=sample_rate)
-        # column2.pyplot(pylab)
-        plot_spectrogram(column2,file_name)
-
-    else:
-        # plotting_graphs(column2,signal_x_axis,signal_y_axis,False)
-        with column2 :
-             Dynamic_graph(signal_x_axis,signal_y_axis,'start1')
-
     columns=st.columns(10)
     index=0
     list_of_sliders_values = []
@@ -73,19 +63,20 @@ def uniform_range_mode(column2, column3, audio_file, show_spectrogram,file_name)
     
     write(".Equalized_Music.wav", sample_rate, modified_signal_channel)   # creates the modified song
     
+    
     if (show_spectrogram):
-        # plot_spectrogram(column3,".Equalized_Music.wav")
-        # pylab.specgram(modified_signal_channel, Fs=sample_rate)
-        # column3.pyplot(pylab)
+        # pylab.specgram(sound_info, Fs=sample_rate)
+        # column2.pyplot(pylab)
+        plot_spectrogram(column2,file_name)
         plot_spectrogram(column3,".Equalized_Music.wav")
+
+
     else:
-        # plotting_graphs(column3,signal_x_axis,modified_signal,False)
-        with column3 :
-            Dynamic_graph(signal_x_axis,modified_signal,'start2')
+        # plotting_graphs(column2,signal_x_axis,signal_y_axis,False)
+        Dynamic_graph(signal_x_axis,signal_y_axis,signal_x_axis,modified_signal)
 
     column2.audio  (audio_file, format='audio/wav') # displaying the audio before editing
     column3.audio(".Equalized_Music.wav", format='audio/wav')             # displaying the audio after editing
-    # Dynamic_graph(signal_x_axis, signal_y_axis )
 #-------------------------------------- ARRYTHMIA FUNCTION ----------------------------------------------------
 def ECG_mode(uploaded_file, show_spectrogram):
 
@@ -130,7 +121,7 @@ def ECG_mode(uploaded_file, show_spectrogram):
     y_inverse_fourier = np.fft.ifft(y_fourier)
 
     if (show_spectrogram):
-            pylab.specgram(y_inverse_fourier[50:950], Fs=samp_rate)
+            pylab.specgram(np.abs(y_inverse_fourier[50:950]), Fs=samp_rate)
             output_col.pyplot(pylab)
     else:
         with output_col:
@@ -141,17 +132,6 @@ def ECG_mode(uploaded_file, show_spectrogram):
             inverse_ax.set_ylabel('Amplitude (mv)')
             st.plotly_chart(inverse_fig)
         
- 
-def Tachycardia_barcardia (Tachycardia,bracardia,uploaded_xaxis):
-    scaling_factor=((Tachycardia+bracardia)/2-80)/80
-    new_x=uploaded_xaxis
-    if (scaling_factor>0):
-        new_x = [item * scaling_factor for item in uploaded_xaxis]
-    if (scaling_factor<0):
-        new_x = [item * 1/scaling_factor for item in uploaded_xaxis]
-
-    return new_x
-
 def arrhythmia (arrhythmia,y_fourier):
     new_y=y_fourier
     df = pd.read_csv('arrhythmia_components.csv')
@@ -205,75 +185,76 @@ def optional_function(column2,column3,audio_file):
     write   (".Equalized_Music.wav", sample_rate, modified_signal_channel) # creates the modified song
     column2.audio('.piano_timpani_piccolo_out.wav', format='audio/wav')    # displaying the audio before editing
     column3.audio(".Equalized_Music.wav", format='audio/wav')              # displaying the audio after  editing
+
 def plot_animation(df):
-    lines = alt.Chart(df).mark_line().encode(
-        x=alt.X('time', axis=alt.Axis(title='date')),
-        y=alt.Y('amplitude', axis=alt.Axis(title='value')),
-    ).properties(
-        width=600,
-        height=300
-    )
-    return lines
-def Dynamic_graph(signal_x_axis, signal_y_axis,button_name ):
-
-    # start of dynamic plotting
-    resize = alt.selection_interval(bind='scales')
-
-    df = pd.DataFrame({'time': signal_x_axis[::1500], 'amplitude': signal_y_axis[:: 1500]}, columns=['time', 'amplitude'])
+    brush = alt.selection_interval()
+    chart1 = alt.Chart(df).mark_line().encode(
+            x=alt.X('time', axis=alt.Axis(title='Time')),
+            # y=alt.Y('amplitude', axis=alt.Axis(title='Amplitude')),
+        ).properties(
+            width=500,
+            height=300
+        ).add_selection(
+            brush
+        ).interactive()
     
-    lines = alt.Chart(df).mark_line().encode( x=alt.X('0:T', axis=alt.Axis(title='time')),
-                                              y=alt.Y('1:Q', axis=alt.Axis(title='value'))).properties(width=600,height=300).add_selection(
-        resize
-    )
+    figure = chart1.encode(y=alt.Y('amplitude',axis=alt.Axis(title='Amplitude'))) | chart1.encode(y ='amplitude after processing').add_selection(
+            brush)
+    return figure
+def Dynamic_graph( signal_x_axis, signal_y_axis,signal_x_axis1, signal_y_axis1,):
+        df = pd.DataFrame({'time': signal_x_axis[::30], 'amplitude': signal_y_axis[:: 30], 'amplitude after processing': signal_y_axis1[::30]}, columns=['time', 'amplitude','amplitude after processing'])
 
-    N = df.shape[0]  # number of elements in the dataframe
-    burst = 6        # number of elements (months) to add to the plot
-    size = burst     # size of the current dataset
+        lines = plot_animation(df)
+        line_plot = st.altair_chart(lines)
 
-    # Plot Animation
-    line_plot = st.altair_chart(lines)
-    start_btn = st.checkbox(label=button_name)
+        col1,col2,col3 = st.columns(3)
+        start_btn = col1.button('Start')
+        pause_btn = col2.button('Pause')
+        stop_btn  = col3.button('Stop')
 
+        N = df.shape[0]  # number of elements in the dataframe
+        burst = 10       # number of elements  to add to the plot
+        size = burst     # size of the current dataset
 
+        if start_btn:
+          
+            for i in range(1, N):
 
-    if start_btn:
-        for i in range(1, N):
-            step_df = df.iloc[0:size]
-            lines = plot_animation(step_df)
-            line_plot = line_plot.altair_chart(lines)
-            size = i + burst
-            if size >= N:
-                size = N - 1
-            time.sleep(.00000000001)
-    # end of dynamic plotting
-# def initial_time_graph(df1,df2):
-#     df1 = pd.DataFrame({'time': signal_x_axis[::1500], 'amplitude': signal_y_axis[:: 1500]}, columns=['time', 'amplitude'])
-#     df2= pd.DataFrame({'time': signal_x_axis[::1500], 'amplitude': signal_y_axis[:: 1500]}, columns=['time', 'amplitude'])
+                step_df = df.iloc[0:size]
+                lines = plot_animation(step_df)
+                line_plot = line_plot.altair_chart(lines)
+                size = i * burst + variabls.start
+                if pause_btn:
+                    # step_df = df.iloc[0:size]
+                    # lines = plot_animation(step_df)
+                    # line_plot = line_plot.altair_chart(lines)
+                    variabls.start=size
+                    
 
-#     resize = alt.selection_interval(bind='scales')
-#     chart1 = alt.Chart(df1).mark_line().encode(
-#     x=alt.X('time:T', axis=alt.Axis(title='date',labels=False)),
-#     y=alt.Y('signal:Q',axis=alt.Axis(title='value'))
-#     ).properties(
-#         width=600,
-#         height=300
-#     ).add_selection(
-#         resize
-#     )
-
-#     chart2 = alt.Chart(df2).mark_line().encode(
-#         x=alt.X('time:T', axis=alt.Axis(title='date',labels=False)),
-#         y=alt.Y('signal:Q',axis=alt.Axis(title='value'))
-#     ).properties(
-#         width=600,
-#         height=300
-#     ).add_selection(
-#         resize
-#     )
+                if size >= N:
+                    size = N - 1 
+                    if stop_btn:
+                        size = 0
+     
 
 
-#     chart=alt.concat(chart1, chart2)
-#     return chart
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 def plot_spectrogram(column,audio_file):
     y, sr = librosa.load(audio_file)

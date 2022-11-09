@@ -3,133 +3,87 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import librosa
-import librosa.display
 import streamlit_vertical_slider  as svs
-from scipy.io import wavfile as wav
 from scipy.fftpack import fft
 from scipy.fft import fft, fftfreq, fftshift
+from scipy.fft import rfft, rfftfreq
+from scipy.fft import irfft
+from scipy.io.wavfile import write
+from scipy.signal import find_peaks
+import wave
+import IPython.display as ipd
+import pylab
+import os
+import librosa
+import librosa.display
+import time
+import altair as alt
+import pandas as pd
+import plotly.graph_objects as go
 
-from scipy.misc import electrocardiogram
-
-class variabls:
+def plot_animation(df1,df2):
     
-    current_slider_values=np.zeros(50)
-    labels_values=np.zeros(50)
-    ranges_values=np.zeros(50)
-    uploaded_time=[]
-    uploaded_Yamp=[]
-    points_num=1000
+    lines1 = alt.Chart(df1).mark_line().encode(
+        x=alt.X('time', axis=alt.Axis(title='date')),
+        y=alt.Y('amplitude', axis=alt.Axis(title='value')),
+    ).properties(
+        width=600,
+        height=300
+    )
+    lines2 = alt.Chart(df2).mark_line().encode(
+        x=alt.X('time', axis=alt.Axis(title='date')),
+        y=alt.Y('amplitude', axis=alt.Axis(title='value')),
+    ).properties(
+        width=600,
+        height=300
+    )
+    return lines1,lines2
+
+def Dynamic_graph(signal_x_axis, signal_y_axis, modified_signal, radio_button,
+                    column2,column3):
+    # start of dynamic plotting
+
+    df1    = pd.DataFrame({'time': signal_x_axis[::1500], 'amplitude': signal_y_axis[:: 1500]}, columns=['time', 'amplitude'])
+    lines1 = alt.Chart(df1).mark_line(width=50).encode( x=alt.X('0:T', axis=alt.Axis(title='time')),
+                        y=alt.Y('1:Q', axis=alt.Axis(title='value'))).properties(width=600,height=300)
+
+    df2    = pd.DataFrame({'time': signal_x_axis[::1500], 'amplitude': modified_signal[:: 1500]}, columns=['time', 'amplitude'])
+    lines2 = alt.Chart(df2).mark_line(width=50).encode( x=alt.X('0:T', axis=alt.Axis(title='time')),
+                        y=alt.Y('1:Q', axis=alt.Axis(title='value'))).properties(width=600,height=300)
+
+    N = df1.shape[0]                   # number of elements in the dataframe
+    if "size" not in st.session_state:
+        st.session_state["size"] = 0   # size of the current dataset # number of elements (months) to add to the plot
+
+    if "start_g" not in st.session_state:
+        st.session_state["start_g"]= 0 
+
+    # Plot Animation
+    line_plot1 = column2.altair_chart(lines1)
+    line_plot2 = column3.altair_chart(lines2)
+    # start_btn1 = st.button(label=button_name)
+    if radio_button == 'play':
+        for i in range(1, N):
+            # st.write(st.session_state.start_g)
+            st.write(st.session_state.size)
+            step_df1 = df1.iloc[st.session_state.start_g:st.session_state.size]
+            step_df2 = df2.iloc[st.session_state.start_g:st.session_state.size]
+            lines1,lines2 = plot_animation(step_df1,step_df2)
 
 
+            line_plot1 = line_plot1.altair_chart(lines1)
+            line_plot2 = line_plot2.altair_chart(lines2)
 
-
-#  ----------------------------------- FOURIER TRANSFORM FUNCTION ---------------------------------------------------
-#  ----------------------------------- FOURIER TRANSFORM FUNCTION ---------------------------------------------------
-
-def fourier_transform(df,factor):
-    # Getting df x_axis and y_axis
-    points_num=int(factor/6 *250 )
-    list_of_columns = df.columns
-    df_x_axis = np.linspace(0,10,points_num)
-    # df_x_axis = list(df[list_of_columns[0]])  
-    df_y_axis = (df[list_of_columns[0]])
-     # Slicing big data
-
-    if (len(df_x_axis)>points_num):
-        df_x_axis=df_x_axis[:points_num]
-    if (len(df_y_axis)>points_num):
-        df_y_axis=df_y_axis[:points_num]
-
-    # Frequency domain representation
-    fourier_transform = np.fft.fft(df_y_axis)
-
-    # Do an inverse Fourier transform on the signal
-    inverse_fourier = np.fft.ifft(fourier_transform)
-
-    # Create subplot
-    figure, axis = plt.subplots()
-    plt.subplots_adjust(hspace=1)
-
-    # Frequency domain representation
-    axis.set_title('Fourier transform depicting the frequency components')
-    axis.plot(df_x_axis, abs(fourier_transform))
-    axis.set_xlabel('Frequency')
-    axis.set_ylabel('Amplitude')
-
-    st.plotly_chart(figure,use_container_width=True)
-
-    return inverse_fourier, fourier_transform
-
-#  ----------------------------------- INVERSE FOURIER TRANSFORM FUNCTION ---------------------------------------------------
-def fourier_inverse_transform(inverse_fourier,df,factor):
-    points_num=int(factor/6 *250 )
-    # Getting df x_axis and y_axis
-    list_of_columns = df.columns
-    df_x_axis = np.linspace(0,10,points_num)
-    # df_x_axis = list(df[list_of_columns[0]])   
-    df_y_axis = list(df[list_of_columns[1]])
-    # Slicing big data
-    if (len(df_x_axis)>points_num):
-        df_x_axis=df_x_axis[:points_num]
-    if (len(df_y_axis)>points_num):
-        df_y_axis=df_y_axis[:points_num]
-
-
-    # Create subplot
-    figure, axis = plt.subplots()
-    plt.subplots_adjust(hspace=1)
-
-    # Frequency domain representation
-    axis.set_title('Inverse Fourier transform depicting the frequency components')
-    axis.plot(df_x_axis, inverse_fourier)
-    axis.set_xlabel('Frequency')
-    axis.set_ylabel('Amplitude')
-
-    fig,ax = plt.subplots()
-    ax.set_title('The Actual Data')
-    ax.plot(df_x_axis,df_y_axis)
-    ax.set_xlabel('Time')
-    ax.set_ylabel('Amplitude')
-
-    st.plotly_chart(figure,use_container_width=True)
-    st.plotly_chart(fig,use_container_width=True)
-
-def save_signal():
-    # define electrocardiogram as ecg model
-    ecg = electrocardiogram()
-    # frequency is 0
-    frequency = 80
-    # calculating time data with ecg size along with frequency
-    time_data = np.arange(ecg.size) / frequency
-    
-    # plotting time and ecg model
-    # plt.plot(time_data[:1000], ecg[:1000])
-    # plt.xlabel("time in seconds")
-    # plt.ylabel("ECG in milli Volts")
-    
-    # display
-    # plt.show()
-    graph = pd.DataFrame({'time':time_data,'amp':ecg})
-    df = pd.DataFrame(graph) 
-    # saving the dataframe 
-    csv_file=df.to_csv()
-    return csv_file
-
-
-# def factor (sampFreq):
-#     fft_out = np.fft.fft(variabls.uploaded_audio_Yamp)          #el fourier bt3t el amplitude eli hnshtghl beha fl equalizer
-#     abs_fft_out=np.abs(fft_out)[:len(variabls.uploaded_audio_time)//2] #np.abs 3shan el rsm
-#     x_axis_fourier = fftfreq(len(variabls.uploaded_audio_Yamp),(1/sampFreq))[:len(variabls.uploaded_audio_Yamp)//2] #3shan mbd2sh mn -ve
-#     filtered=[]
-#     filtered_out=[]
-#     for i in range(lltered_out.append(0)
-#             filtered.append(fft_out[i])en(x_axis_fourier)):
-#         if 600<x_axis_fourier[i]<700 or 1620<x_axis_fourier[i]<1820 or 2310<x_axis_fourier[i]<2510:
-#             filtered.append(0)
-#             filtered_out.append(fft_out[i])
-#         else:
-#             fi
-#             plotting(x_axis_fourier,filtered)
-#     inverse=np.real(np.fft.ifft(filtered,))
-#     inverse_out=np.real(np.fft.ifft(filtered_out,))
+            st.session_state.size = i + 6
+            if st.session_state.size >= N:
+                st.session_state.size = N - 1
+            time.sleep(0.000001)
+    elif radio_button == 'pause':
+        step_df1 = df1.iloc[0:st.session_state.size]  
+        step_df2 = df2.iloc[0:st.session_state.size] 
+        lines1,lines2 = plot_animation(step_df1,step_df2)
+        line_plot1 = line_plot1.altair_chart(lines1)
+        line_plot2 = line_plot2.altair_chart(lines2)
+        # st.session_state.start_g = st.session_state.size 
+        # st.write(st.session_state.start_g)
+        # st.session_state.size += 6
