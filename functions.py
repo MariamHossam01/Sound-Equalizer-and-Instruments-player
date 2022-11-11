@@ -227,6 +227,7 @@ def Dynamic_graph( signal_x_axis, signal_y_axis,signal_x_axis1, signal_y_axis1,)
         if resume_btn: 
             
             for i in range( variabls.start,N):
+                variabls.start=i
                 step_df = df.iloc[0:size]
                 lines = plot_animation(step_df)
                 line_plot = line_plot.altair_chart(lines)
