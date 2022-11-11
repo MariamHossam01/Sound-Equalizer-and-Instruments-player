@@ -204,10 +204,11 @@ def Dynamic_graph( signal_x_axis, signal_y_axis,signal_x_axis1, signal_y_axis1,)
         lines = plot_animation(df)
         line_plot = st.altair_chart(lines)
 
-        col1,col2,col3 = st.columns(3)
-        start_btn = col1.button('Start')
-        pause_btn = col2.button('Pause')
-        stop_btn  = col3.button('Stop')
+        col1,col2,col3,col4 = st.columns(4)
+        start_btn  = col1.button(label='Start')
+        pause_btn  = col2.button(label='Pause')
+        resume_btn = col3.button(label='resume')
+        # stop_btn   = col4.button(label='Stop')
 
         N = df.shape[0]  # number of elements in the dataframe
         burst = 10       # number of elements  to add to the plot
@@ -216,42 +217,25 @@ def Dynamic_graph( signal_x_axis, signal_y_axis,signal_x_axis1, signal_y_axis1,)
         if start_btn:
           
             for i in range(1, N):
-
+                variabls.start=i
                 step_df = df.iloc[0:size]
                 lines = plot_animation(step_df)
                 line_plot = line_plot.altair_chart(lines)
-                size = i * burst + variabls.start
-                if pause_btn:
-                    # step_df = df.iloc[0:size]
-                    # lines = plot_animation(step_df)
-                    # line_plot = line_plot.altair_chart(lines)
-                    variabls.start=size
-                    
+                size = i * burst 
+                print('start')                    
 
-                if size >= N:
-                    size = N - 1 
-                    if stop_btn:
-                        size = 0
-     
+        if resume_btn: 
+            
+            for i in range( variabls.start,N):
+                step_df = df.iloc[0:size]
+                lines = plot_animation(step_df)
+                line_plot = line_plot.altair_chart(lines)
+                size = i * burst
+                print('resume')                
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        if pause_btn:
+            print('pause')  
+          
 
 def plot_spectrogram(column,audio_file):
     y, sr = librosa.load(audio_file)
