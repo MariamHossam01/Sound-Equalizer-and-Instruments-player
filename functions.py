@@ -90,16 +90,27 @@ def uniform_range_mode(column2, column3, audio_file, show_spectrogram,file_name)
 #-------------------------------------- ARRYTHMIA FUNCTION ----------------------------------------------------
 def ECG_mode(uploaded_file, show_spectrogram):
 
-    # ------------ECG Sliders  
-    Arrhythmia  =st.slider('Arrhythmia mode'                    , step=1, max_value=100 , min_value=-100  ,value=0 )
-    Arrhythmia/=100
+    # ------------ECG Sliders 
+    # Arrhythmia  =st.slider('Arrhythmia mode'                    , step=1, max_value=100 , min_value=-100  ,value=0 )
+    # Arrhythmia/=100 
+
+    Arrhythmia=vertical_slider(0,1,-100,100)
+    Arrhythmia/=100 
+    # 3 columns input , output ,slider
+    input_col, output_col,slider_col=st.columns([10,10,2])
+  
+
+    # with slider_col:
+    #     Arrhythmia=vertical_slider(0,1,-100,100)
+    #     Arrhythmia/=100
+
+
     # Reading uploaded_file
     df = pd.read_csv(uploaded_file)
     uploaded_xaxis=df['time']
     uploaded_yaxis=df['amp']
     smap_time=uploaded_xaxis[1]-uploaded_xaxis[0]
     samp_rate=1/smap_time
-    input_col, output_col=st.columns([1,1])
 
     # Slicing big data
     if (len(uploaded_xaxis)>variabls.points_num):
