@@ -16,9 +16,10 @@ import pandas as pd
 import wavio
 class variabls:
     
-    points_num=2000
+    points_num=1000
     start=0
     graph_size=0
+
     vowel_freq_ae=[860,2850]
     vowel_freq_a=[850,2800]
     slider_tuble=(vowel_freq_ae,vowel_freq_a)
@@ -132,11 +133,22 @@ def ECG_mode(uploaded_file, show_spectrogram):
         
 def arrhythmia (arrhythmia,y_fourier):
     new_y=y_fourier
+    # reading arrhhytmia component
     df = pd.read_csv('arrhythmia_components.csv')
     sub=df['sub']
     abs_sub=df['abs_sub']
-    result = [item * arrhythmia for item in abs_sub]
-    new_y=np.add(y_fourier,result)
+    
+    # converting string to complex
+    for index in np.arange(0,len(sub)):
+            sub[index]=complex(sub[index])
+    # multiplying arrhythmia components by weighting factor
+    weighted_arrhythmia=sub
+    for index in np.arange(0,len(weighted_arrhythmia)):
+        weighted_arrhythmia[index]=sub[index]* complex(arrhythmia)*(-1)
+    # addinh weighted arrhythmia and uploaded complex amp
+
+    # result = [item * arrhythmia for item in sub]
+    new_y=np.add(y_fourier,weighted_arrhythmia)
 
     return new_y
 #------------------
@@ -243,7 +255,6 @@ def Dynamic_graph( signal_x_axis, signal_y_axis,signal_x_axis1, signal_y_axis1,)
             line_plot = line_plot.altair_chart(lines)
             print('pause')  
           
-
 def plot_spectrogram(column,audio_file):
     y, sr = librosa.load(audio_file)
     D = librosa.stft(y)  # STFT of y
