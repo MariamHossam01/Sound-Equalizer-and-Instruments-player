@@ -135,7 +135,7 @@ def arrhythmia (arrhythmia,y_fourier):
     new_y=y_fourier
     # reading arrhhytmia component
     df = pd.read_csv('arrhythmia_components.csv')
-    sub=df['sub']
+    sub=df['sub'][0:variabls.points_num]
     abs_sub=df['abs_sub']
     
     # converting string to complex
@@ -299,21 +299,3 @@ def apply_slider_value(x_axis_fourier,y_axis_fourier,ae_freq_value,a_freq_value)
     return(filtered_fft/3)
 
 
-
-
-# def dynamic():
-#     test_music1, sr1 = librosa.load("StarWars3.wav")
-#     d=(pd.DataFrame(test_music1,columns=['amp']))
-#     data=st.empty()
-#     def make_chart(df,ymin, ymax):
-#         fig = go.Figure(layout_yaxis_range=[ymin, ymax])
-#         fig.add_trace(go.Scatter(x=(df.index/300000),y=df['amp']))
-#         fig.update_layout(width=800, height=570, xaxis_title='time',yaxis_title='amplitude')
-#     ymax = max(d['amp'])
-#     ymin = min(d['amp'])
-#     n = len(d)
-#     for i in range(0,n+10000, 200):
-#         df_tmp = (d.iloc[i:i+10000, :])
-#         with data:
-#             make_chart(df_tmp, ymin, ymax)
-#         time.sleep(0.00001)
