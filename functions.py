@@ -14,6 +14,8 @@ import time
 import altair as alt
 import pandas as pd
 import wavio
+import os 
+import streamlit.components.v1 as components 
 class variabls:
     
     points_num=2000
@@ -22,6 +24,15 @@ class variabls:
     vowel_freq_ae=[860,2850]
     vowel_freq_a=[850,2800]
     slider_tuble=(vowel_freq_ae,vowel_freq_a)
+
+parent_dir  = os.path.dirname(os.path.abspath(__file__))
+build_dir   = os.path.join(parent_dir, "build")
+_vertical_slider = components.declare_component("vertical_slider", path=build_dir)
+
+
+def vertical_slider(value, step, min=min, max=max, key=None):
+    slider_value = _vertical_slider(value=value,step=step, min=min, max=max, key=key, default=value)
+    return slider_value
 #------------------------------------------- Reading Audio ----------------------------------------------------------- 
 def read_audio(audio_file):
     obj = wave.open(audio_file, 'r')
@@ -47,7 +58,7 @@ def uniform_range_mode(column2, column3, audio_file, show_spectrogram,file_name)
     list_of_sliders_values = []
     while index < 10:
         with columns[index]:
-            sliders = (st.slider(label="",key=index, min_value=0, max_value=10,value=1, step=1))
+            sliders = (vertical_slider(1,1,1,10,index))
         index +=1
         list_of_sliders_values.append(sliders)
 
@@ -151,15 +162,6 @@ def plotting_graphs(column,x_axis,y_axis,flag):
         # plt.xlabel("Time in s")
         # plt.ylabel("ECG in mV")     
     column.plotly_chart(fig)
-    #--------------------------------------------- PLOTTING SPECTROGRAMS ---------------------------------
-# def plot_spectrogram(column,audio_file):
-#     signal_x_axis, signal_y_axis, sample_rate,  sound_info = read_audio(audio_file)
-#     pylab.figure(num=None, figsize=(19, 12))
-#     pylab.subplot(111)
-#     # pylab.title('spectrogram of %r' % wav_file)
-#     pylab.specgram(sound_info, Fs=sample_rate)
-#     pylab.savefig('spectrogram.png')
-#     column.pyplot(pylab)
     #----------------------------------------- Reading Audio
 def optional_function(column2,column3,audio_file):
     signal_x_axis, signal_y_axis, sample_rate ,sound_info = read_audio(audio_file)    # Read Audio File
