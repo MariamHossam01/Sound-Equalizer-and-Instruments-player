@@ -16,8 +16,9 @@ import pandas as pd
 import wavio
 class variabls:
     
-    points_num=1000
+    points_num=2000
     start=0
+    graph_size=0
     vowel_freq_ae=[860,2850]
     vowel_freq_a=[850,2800]
     slider_tuble=(vowel_freq_ae,vowel_freq_a)
@@ -221,6 +222,7 @@ def Dynamic_graph( signal_x_axis, signal_y_axis,signal_x_axis1, signal_y_axis1,)
                 step_df = df.iloc[0:size]
                 lines = plot_animation(step_df)
                 line_plot = line_plot.altair_chart(lines)
+                variabls.graph_size=size
                 size = i * burst 
                 print('start')                    
 
@@ -231,10 +233,14 @@ def Dynamic_graph( signal_x_axis, signal_y_axis,signal_x_axis1, signal_y_axis1,)
                 step_df = df.iloc[0:size]
                 lines = plot_animation(step_df)
                 line_plot = line_plot.altair_chart(lines)
+                variabls.graph_size=size
                 size = i * burst
                 print('resume')                
 
         if pause_btn:
+            step_df = df.iloc[0:variabls.graph_size]
+            lines = plot_animation(step_df)
+            line_plot = line_plot.altair_chart(lines)
             print('pause')  
           
 
