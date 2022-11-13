@@ -25,7 +25,7 @@ if uploaded_file is not None:
             # fn.plot_spectrogram(column2,uploaded_file)
 
     elif select_mode == "Music":
-        pass
+         fn.music_control(column2, column3, uploaded_file, show_spectrogram,file_name)
     elif select_mode == "Vowels":
         if file_extension == "wav":
             fn.vowels_mode(uploaded_file,column2,column3)

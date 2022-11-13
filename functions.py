@@ -16,6 +16,8 @@ import pandas as pd
 import wavio
 import os 
 import streamlit.components.v1 as components 
+import  streamlit_vertical_slider  as svs
+
 class variabls:
     
     points_num=1000
@@ -44,14 +46,22 @@ def read_audio(audio_file):
     sound_info    = pylab.fromstring(signal_wave, 'int16')
     signal_y_axis = np.frombuffer(signal_wave, dtype=np.int16)
     signal_x_axis = np.linspace(0, duration, len(signal_y_axis))
-    return signal_x_axis, signal_y_axis, sample_rate,  sound_info
-
-#-------------------------------------- UNIFORM RANGE MODE FUNCTION ----------------------------------------------------
-def uniform_range_mode(column2, column3, audio_file, show_spectrogram,file_name):
-    signal_x_axis, signal_y_axis, sample_rate ,sound_info = read_audio(audio_file)    # Read Audio File
-
+    return signal_x_axis, signal_y_axis, sample_rate
+#--------------------------------------------Fourir Transform----------------------------------------------------------
+def fourir(signal_x_axis, signal_y_axis):
     yf = rfft(signal_y_axis)                                               # returns complex numbers of the y axis in the data frame
     xf = rfftfreq(len(signal_y_axis), (signal_x_axis[1]-signal_x_axis[0])) # returns the frequency x axis after fourier transform
+    return yf,xf
+#------------------------------------------Inverse Fourir Transform----------------------------------------------------------
+def inverse_fourir(yf):
+    inverse_signal = irfft(yf)     
+    modified_signal_channel = np.int16(inverse_signal) # returns two channels            # returns the inverse transform a
+    return inverse_signal,modified_signal_channel 
+#-------------------------------------- UNIFORM RANGE MODE FUNCTION ----------------------------------------------------
+def uniform_range_mode(column2, column3, audio_file, show_spectrogram,file_name):
+    signal_x_axis, signal_y_axis, sample_rate= read_audio(audio_file)    # Read Audio File
+
+    yf,xf = fourir(signal_x_axis, signal_y_axis)
     
     points_per_freq = len(xf) / (xf[-1])  # duration
     columns=st.columns(10)
@@ -68,8 +78,7 @@ def uniform_range_mode(column2, column3, audio_file, show_spectrogram,file_name)
     else:
         pass
     
-    modified_signal         = irfft(yf)                 # returns the inverse transform after modifying it with sliders 
-    modified_signal_channel = np.int16(modified_signal) # returns two channels
+    modified_signal,modified_signal_channel =inverse_fourir(yf)   # returns two channels
     
     write(".Equalized_Music.wav", sample_rate, modified_signal_channel)   # creates the modified song
     
@@ -87,6 +96,48 @@ def uniform_range_mode(column2, column3, audio_file, show_spectrogram,file_name)
 
     column2.audio  (audio_file, format='audio/wav') # displaying the audio before editing
     column3.audio(".Equalized_Music.wav", format='audio/wav')             # displaying the audio after editing
+#--------------------------------------Musical Instrument Function -------------------------------------------
+def music_control(column2, column3, audio_file, show_spectrogram,file_name):
+    signal_x_axis, signal_y_axis, sample_rate  = read_audio(audio_file)    # Read Audio File
+    columns=st.columns(2)
+    index=0
+    list_of_sliders_values_musical = []
+    yf,xf = fourir(signal_x_axis, signal_y_axis)
+    duration = len(xf) / (xf[-1])  # duration
+    while index <=1:
+        with columns[index]:
+                   sliders =svs.vertical_slider(key = index,default_value=1, 
+                    step=1, 
+                    min_value=0, 
+                    max_value=2,
+                    slider_color= 'green' #optional
+               
+                    )
+        index +=1
+        list_of_sliders_values_musical .append(sliders)
+   
+  
+    # yf[int(10*duration):int(800*duration)]*=list_of_sliders_values_musical [0]     # drums off 1
+ 
+    # yf[int(600*duration ):int(14000*duration)]*=list_of_sliders_values_musical [1]     # violion off 2 and piano off
+
+    modified_signal,modified_signal_channel =inverse_fourir(yf)   # returns two channels
+    
+    write(".Equalized_Music2.wav", sample_rate*2,modified_signal_channel)   # creates the modified song
+    
+    
+    if (show_spectrogram):
+
+        plot_spectrogram(column2,file_name)
+        plot_spectrogram(column3,".Equalized_Music2.wav")
+
+   
+    else:
+  
+        Dynamic_graph(signal_x_axis,signal_y_axis,signal_x_axis,modified_signal )
+
+    column2.audio  (audio_file, format='audio/wav') # displaying the audio before editing
+    column3.audio(".Equalized_Music2.wav", format='audio/wav')             # displaying the audio after editing
 #-------------------------------------- ARRYTHMIA FUNCTION ----------------------------------------------------
 def ECG_mode(uploaded_file, show_spectrogram):
 
@@ -131,15 +182,16 @@ def ECG_mode(uploaded_file, show_spectrogram):
             st.plotly_chart(uploaded_fig)
 
     # fourier transorm
-    y_fourier = np.fft.fft(uploaded_yaxis)
+    y_fourier,xf = fourir(uploaded_xaxis, uploaded_yaxis)
+    # y_fourier = np.fft.fft(uploaded_yaxis)
     
     y_fourier=arrhythmia (Arrhythmia,y_fourier)
     # abs_y_fourier=np.abs(y_fourier)
     # x_fourier = fftfreq(len(uploaded_xaxis),(uploaded_xaxis[5]-uploaded_xaxis[0])/5) 
     # length=(len( y_fourier ))//2
 
-
-    y_inverse_fourier = np.fft.ifft(y_fourier)
+    y_inverse_fourier,modified_signal_channel =inverse_fourir(y_fourier)   # returns two channels
+    # y_inverse_fourier = np.fft.ifft(y_fourier)
 
     if (show_spectrogram):
             pylab.specgram(np.abs(y_inverse_fourier[50:950]), Fs=samp_rate)
@@ -188,9 +240,10 @@ def plotting_graphs(column,x_axis,y_axis,flag):
     #----------------------------------------- Reading Audio
 def optional_function(column2,column3,audio_file):
     signal_x_axis, signal_y_axis, sample_rate ,sound_info = read_audio(audio_file)    # Read Audio File
-
-    yf = rfft(signal_y_axis)                                               # returns complex numbers of the y axis in the data frame
-    xf = rfftfreq(len(signal_y_axis), (signal_x_axis[1]-signal_x_axis[0])) # returns the frequency x axis after fourier transform
+    yf,xf = fourir(signal_x_axis, signal_y_axis)
+   
+    # yf = rfft(signal_y_axis)                                               # returns complex numbers of the y axis in the data frame
+    # xf = rfftfreq(len(signal_y_axis), (signal_x_axis[1]-signal_x_axis[0])) # returns the frequency x axis after fourier transform
     
     points_per_freq = len(xf) / (xf[-1]) # duration
 
@@ -200,8 +253,10 @@ def optional_function(column2,column3,audio_file):
     slider_range   = sub_column1.slider(label='Bass Sound'   , min_value=0, max_value=10, value=1, step=1, key="Bass slider")
     
     yf[int(points_per_freq*0)   :int(points_per_freq* 1000)] *= slider_range
-    modified_signal         = irfft(yf)                 # returns the inverse transform after modifying it with sliders
-    modified_signal_channel = np.int16(modified_signal) # returns two channels 
+    # modified_signal         = irfft(yf)                 # returns the inverse transform after modifying it with sliders
+    # modified_signal_channel = np.int16(modified_signal) # returns two channels 
+
+    modified_signal,modified_signal_channel =inverse_fourir(yf)   # returns two channels
 
     plotting_graphs(column2,signal_x_axis,modified_signal,False)
 
@@ -281,16 +336,20 @@ def plot_spectrogram(column,audio_file):
 def vowels_mode(uploaded_file,column_in,column_out):
     ae_freq_value=st.slider('ae',min_value=0,max_value=1,value=1,key=1)
     a_freq_value=st.slider('ae',min_value=0,max_value=1,value=1,key=2)
-    signal_x_axis, signal_y_axis, sample_rate ,sound_info = read_audio(uploaded_file)    # Read Audio File
+    signal_x_axis, signal_y_axis, sample_rate = read_audio(uploaded_file)    # Read Audio File
 
+    y_axis_fourier,x_axis_fourier = fourir(signal_x_axis, signal_y_axis)
+   
 
-    y_axis_fourier = np.fft.fft(signal_y_axis)                       
-    x_axis_fourier = np.fft.fftfreq(len(signal_y_axis), (signal_x_axis[1]-signal_x_axis[0]))
+    # y_axis_fourier = np.fft.fft(signal_y_axis)                       
+    # x_axis_fourier = np.fft.fftfreq(len(signal_y_axis), (signal_x_axis[1]-signal_x_axis[0]))
     st.write(len(y_axis_fourier))
     
     filtered_fft=apply_slider_value(x_axis_fourier,y_axis_fourier,ae_freq_value,a_freq_value)
     st.write(len(filtered_fft))
-    inverse=(np.fft.ifft(filtered_fft,))
+
+    inverse,modified_signal_channel =inverse_fourir(filtered_fft,)   # returns two channels
+    # inverse=(np.fft.ifft(filtered_fft,))
     plotting_graphs(column_in,signal_x_axis,signal_y_axis)
     plotting_graphs(column_out,x_axis_fourier*2,np.real(inverse))
     wavio.write("myfile.wav", inverse, sample_rate//2, sampwidth=1)
