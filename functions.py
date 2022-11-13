@@ -1,4 +1,3 @@
-import random 
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
@@ -10,14 +9,14 @@ import wave
 import pylab
 import librosa
 import librosa.display
-import time
 import altair as alt
 import pandas as pd
 import wavio
 import os 
 import streamlit.components.v1 as components 
-class variabls:
-    
+import IPython.display as ipd
+
+class variables:
     points_num=1000
     start=0
     graph_size=0
@@ -72,38 +71,19 @@ def uniform_range_mode(column2, column3, audio_file, show_spectrogram,file_name)
     modified_signal_channel = np.int16(modified_signal) # returns two channels
     
     write(".Equalized_Music.wav", sample_rate, modified_signal_channel)   # creates the modified song
-    
-    
     if (show_spectrogram):
-        # pylab.specgram(sound_info, Fs=sample_rate)
-        # column2.pyplot(pylab)
         plot_spectrogram(column2,file_name)
         plot_spectrogram(column3,".Equalized_Music.wav")
-
-
     else:
-        # plotting_graphs(column2,signal_x_axis,signal_y_axis,False)
         Dynamic_graph(signal_x_axis,signal_y_axis,signal_x_axis,modified_signal)
-
-    column2.audio  (audio_file, format='audio/wav') # displaying the audio before editing
-    column3.audio(".Equalized_Music.wav", format='audio/wav')             # displaying the audio after editing
 #-------------------------------------- ARRYTHMIA FUNCTION ----------------------------------------------------
 def ECG_mode(uploaded_file, show_spectrogram):
 
     # ------------ECG Sliders 
-    # Arrhythmia  =st.slider('Arrhythmia mode'                    , step=1, max_value=100 , min_value=-100  ,value=0 )
-    # Arrhythmia/=100 
-
     Arrhythmia=vertical_slider(0,1,-100,100)
     Arrhythmia/=100 
     # 3 columns input , output ,slider
     input_col, output_col,slider_col=st.columns([10,10,2])
-  
-
-    # with slider_col:
-    #     Arrhythmia=vertical_slider(0,1,-100,100)
-    #     Arrhythmia/=100
-
 
     # Reading uploaded_file
     df = pd.read_csv(uploaded_file)
@@ -113,10 +93,10 @@ def ECG_mode(uploaded_file, show_spectrogram):
     samp_rate=1/smap_time
 
     # Slicing big data
-    if (len(uploaded_xaxis)>variabls.points_num):
-        uploaded_xaxis=uploaded_xaxis[:variabls.points_num]
-    if (len(uploaded_yaxis)>variabls.points_num):
-        uploaded_yaxis=uploaded_yaxis[:variabls.points_num]
+    if (len(uploaded_xaxis)>variables.points_num):
+        uploaded_xaxis=uploaded_xaxis[:variables.points_num]
+    if (len(uploaded_yaxis)>variables.points_num):
+        uploaded_yaxis=uploaded_yaxis[:variables.points_num]
     # Plotting input signal
     if (show_spectrogram):
             pylab.specgram(uploaded_yaxis[50:950], Fs=samp_rate)
@@ -134,11 +114,6 @@ def ECG_mode(uploaded_file, show_spectrogram):
     y_fourier = np.fft.fft(uploaded_yaxis)
     
     y_fourier=arrhythmia (Arrhythmia,y_fourier)
-    # abs_y_fourier=np.abs(y_fourier)
-    # x_fourier = fftfreq(len(uploaded_xaxis),(uploaded_xaxis[5]-uploaded_xaxis[0])/5) 
-    # length=(len( y_fourier ))//2
-
-
     y_inverse_fourier = np.fft.ifft(y_fourier)
 
     if (show_spectrogram):
@@ -157,7 +132,7 @@ def arrhythmia (arrhythmia,y_fourier):
     new_y=y_fourier
     # reading arrhhytmia component
     df = pd.read_csv('arrhythmia_components.csv')
-    sub=df['sub'][0:variabls.points_num]
+    sub=df['sub'][0:variables.points_num]
     abs_sub=df['abs_sub']
     
     # converting string to complex
@@ -173,7 +148,6 @@ def arrhythmia (arrhythmia,y_fourier):
     new_y=np.add(y_fourier,weighted_arrhythmia)
 
     return new_y
-#------------------
 #------------------------------------------ PLOTTING FUNCTION -------------------------------------------------------
 def plotting_graphs(column,x_axis,y_axis,flag):
     fig,axs = plt.subplots()
@@ -185,30 +159,44 @@ def plotting_graphs(column,x_axis,y_axis,flag):
         # plt.xlabel("Time in s")
         # plt.ylabel("ECG in mV")     
     column.plotly_chart(fig)
-    #----------------------------------------- Reading Audio
-def optional_function(column2,column3,audio_file):
-    signal_x_axis, signal_y_axis, sample_rate ,sound_info = read_audio(audio_file)    # Read Audio File
+    #---------------------------------------- OPTIONAL FUNCTION ------------------------------------------------
+def voice_changer(uploaded_file, column1, column2, column3, show_spectrogram):
 
-    yf = rfft(signal_y_axis)                                               # returns complex numbers of the y axis in the data frame
-    xf = rfftfreq(len(signal_y_axis), (signal_x_axis[1]-signal_x_axis[0])) # returns the frequency x axis after fourier transform
-    
-    points_per_freq = len(xf) / (xf[-1]) # duration
+    signal_x_axis, signal_y_axis, sample_rate ,sound_info = read_audio(uploaded_file)    # Read Audio File
 
-    plotting_graphs(column2,signal_x_axis,signal_y_axis,False)
+    if (show_spectrogram):
+        plot_spectrogram(column2, uploaded_file.name)
+    else:
+        plotting_graphs(column2,signal_x_axis,signal_y_axis,False)
 
-    sub_column1, sub_column2, sub_column3 = st.columns([1,1,1])
-    slider_range   = sub_column1.slider(label='Bass Sound'   , min_value=0, max_value=10, value=1, step=1, key="Bass slider")
-    
-    yf[int(points_per_freq*0)   :int(points_per_freq* 1000)] *= slider_range
-    modified_signal         = irfft(yf)                 # returns the inverse transform after modifying it with sliders
-    modified_signal_channel = np.int16(modified_signal) # returns two channels 
+    voice = column1.radio('Voice', options=["Deep Voice", "Smooth Voice"])
 
-    plotting_graphs(column2,signal_x_axis,modified_signal,False)
+    column2.audio(uploaded_file, format="audio/wav")
 
-    write   (".Equalized_Music.wav", sample_rate, modified_signal_channel) # creates the modified song
-    column2.audio('.piano_timpani_piccolo_out.wav', format='audio/wav')    # displaying the audio before editing
-    column3.audio(".Equalized_Music.wav", format='audio/wav')              # displaying the audio after  editing
+    if voice == "Deep Voice":
+        empty = column2.empty()
+        empty.empty()
+        speed_rate = 1.4
+        sampling_rate_factor = 1.4
 
+    elif voice == "Smooth Voice":
+        empty = column2.empty()
+        empty.empty()
+        speed_rate = 0.5
+        sampling_rate_factor = 0.5
+
+    loaded_sound_file, sampling_rate = librosa.load(uploaded_file, sr=None)
+    loaded_sound_file                = librosa.effects.time_stretch(loaded_sound_file, rate=speed_rate)
+
+    # if (show_spectro):
+    #     plot_spectro(column2, uploaded_file.name)
+    # else:
+    #     plotting_graphs(column2,signal_x_axis,signal_y_axis,False)
+
+    song = ipd.Audio(loaded_sound_file, rate = sampling_rate / sampling_rate_factor)
+    empty.write(song)
+
+#------------------------------------------------- DYNAMIC PLOTTING -----------------------------------------------
 def plot_animation(df):
     brush = alt.selection_interval()
     chart1 = alt.Chart(df).mark_line().encode(
@@ -243,27 +231,27 @@ def Dynamic_graph( signal_x_axis, signal_y_axis,signal_x_axis1, signal_y_axis1,)
         if start_btn:
           
             for i in range(1, N):
-                variabls.start=i
+                variables.start=i
                 step_df = df.iloc[0:size]
                 lines = plot_animation(step_df)
                 line_plot = line_plot.altair_chart(lines)
-                variabls.graph_size=size
+                variables.graph_size=size
                 size = i * burst 
                 print('start')                    
 
         if resume_btn: 
             
-            for i in range( variabls.start,N):
-                variabls.start=i
+            for i in range( variables.start,N):
+                variables.start=i
                 step_df = df.iloc[0:size]
                 lines = plot_animation(step_df)
                 line_plot = line_plot.altair_chart(lines)
-                variabls.graph_size=size
+                variables.graph_size=size
                 size = i * burst
                 print('resume')                
 
         if pause_btn:
-            step_df = df.iloc[0:variabls.graph_size]
+            step_df = df.iloc[0:variables.graph_size]
             lines = plot_animation(step_df)
             line_plot = line_plot.altair_chart(lines)
             print('pause')  
@@ -302,8 +290,8 @@ def apply_slider_value(x_axis_fourier,y_axis_fourier,ae_freq_value,a_freq_value)
     slider_values=[ae_freq_value,a_freq_value]
     filtered_fft=y_axis_fourier
     for slider_counter in range(len(slider_values)):
-        min_value=variabls.slider_tuble[slider_counter][0]
-        max_value=variabls.slider_tuble[slider_counter][1]
+        min_value=variables.slider_tuble[slider_counter][0]
+        max_value=variables.slider_tuble[slider_counter][1]
         for i in range(len(x_axis_fourier)):
             if min_value<=x_axis_fourier[i]<=max_value:#ae
                 filtered_fft[i]+=y_axis_fourier[i]*slider_values[slider_counter]

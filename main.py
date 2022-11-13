@@ -14,7 +14,7 @@ with st.sidebar:
     show_spectrogram = st.checkbox("Show Spectrogram")
     # ------------------------------------------------------------------------------------ Calling Main Functions
 
-column2,column3=st.columns([2,2])
+column1,column2,column3=st.columns([1.5,2,2])
 if uploaded_file is not None:
     file_type = uploaded_file.type
     file_name = uploaded_file.name
@@ -22,7 +22,6 @@ if uploaded_file is not None:
     if select_mode == "Uniform Range Mode":
         if file_extension == "wav":
             fn.uniform_range_mode(column2, column3, uploaded_file, show_spectrogram,file_name)
-            # fn.plot_spectrogram(column2,uploaded_file)
 
     elif select_mode == "Music":
         pass
@@ -34,7 +33,7 @@ if uploaded_file is not None:
           if file_extension == "csv":
                 fn.ECG_mode(uploaded_file, show_spectrogram)
     elif select_mode == "Optional":
-        fn.optional_function(column2,column3,uploaded_file)
+        fn.voice_changer(uploaded_file, column1, column2, column3, show_spectrogram)
 
 
 else:
