@@ -55,10 +55,11 @@ def inverse_fourir(yf):
     modified_signal_channel = np.int16(inverse_signal) # returns two channels            # returns the inverse transform a
     return inverse_signal,modified_signal_channel 
 #-------------------------------------- UNIFORM RANGE MODE FUNCTION ----------------------------------------------------
-def uniform_range_mode(column2, column3, audio_file, show_spectrogram,file_name):
+def uniform_range_mode(column1,column2, column3, audio_file, show_spectrogram,file_name):
     signal_x_axis, signal_y_axis, sample_rate= read_audio(audio_file)    # Read Audio File
 
     yf,xf = fourir(signal_x_axis, signal_y_axis)
+    
     points_per_freq = len(xf) / (xf[-1])  # duration
     columns=st.columns(10)
     index=0
@@ -77,14 +78,22 @@ def uniform_range_mode(column2, column3, audio_file, show_spectrogram,file_name)
     modified_signal,modified_signal_channel =inverse_fourir(yf)   # returns two channels
     
     write(".Equalized_Music.wav", sample_rate, modified_signal_channel)   # creates the modified song
+    
     if (show_spectrogram):
-        plot_spectrogram(column2,file_name)
-        plot_spectrogram(column3,".Equalized_Music.wav")
+        plot_spectrogram(column1,file_name)
+        plot_spectrogram(column2,".Equalized_Music.wav")
     else:
-        Dynamic_graph(signal_x_axis,signal_y_axis,signal_x_axis,modified_signal)
+        start_btn  = column1.button(label='Start')
+        pause_btn  = column2.button(label='Pause')
+        column1.audio  (audio_file, format='audio/wav') # displaying the audio before editing
+        # column2.audio(".Equalized_Music.wav", format='audio/wav')             # displaying the audio after editing
+        resume_btn = column3.button(label='resume')
+        column3.audio(".Equalized_Music.wav", format='audio/wav')             # displaying the audio after editing
 
-    column2.audio  (audio_file, format='audio/wav') # displaying the audio before editing
-    column3.audio(".Equalized_Music.wav", format='audio/wav')             # displaying the audio after editing
+        with column1:
+            Dynamic_graph(signal_x_axis,signal_y_axis,modified_signal,start_btn,pause_btn,resume_btn)
+
+    # column2.audio  (audio_file, format='audio/wav') # displaying the audio before editing
 #--------------------------------------Musical Instrument Function -------------------------------------------
 def music_control(column2, column3, audio_file, show_spectrogram,file_name):
     signal_x_axis, signal_y_axis, sample_rate  = read_audio(audio_file)    # Read Audio File
@@ -247,16 +256,16 @@ def plot_animation(df):
     figure = chart1.encode(y=alt.Y('amplitude',axis=alt.Axis(title='Amplitude'))) | chart1.encode(y ='amplitude after processing').add_selection(
             brush)
     return figure
-def Dynamic_graph( signal_x_axis, signal_y_axis,signal_x_axis1, signal_y_axis1,):
+def Dynamic_graph( signal_x_axis, signal_y_axis, signal_y_axis1,start_btn,pause_btn,resume_btn):
         df = pd.DataFrame({'time': signal_x_axis[::30], 'amplitude': signal_y_axis[:: 30], 'amplitude after processing': signal_y_axis1[::30]}, columns=['time', 'amplitude','amplitude after processing'])
 
         lines = plot_animation(df)
         line_plot = st.altair_chart(lines)
 
-        col1,col2,col3 = st.columns(3)
-        start_btn  = col1.button(label='Start')
-        pause_btn  = col2.button(label='Pause')
-        resume_btn = col3.button(label='Resume')
+        # col1,col2,col3 = st.columns(3)
+        # start_btn  = col1.button(label='Start')
+        # pause_btn  = col2.button(label='Pause')
+        # resume_btn = col3.button(label='Resume')
         N = df.shape[0]  # number of elements in the dataframe
         burst = 10       # number of elements  to add to the plot
         size = burst     # size of the current dataset
@@ -286,8 +295,8 @@ def Dynamic_graph( signal_x_axis, signal_y_axis,signal_x_axis1, signal_y_axis1,)
             lines = plot_animation(step_df)
             line_plot = line_plot.altair_chart(lines)
           
-def plot_spectrogram(column,audio_file):
-    y, sr = librosa.load(audio_file)
+def plot_spectrogram(column,file_name):
+    y, sr = librosa.load(file_name)
     D = librosa.stft(y)  # STFT of y
     S_db = librosa.amplitude_to_db(np.abs(D), ref=np.max)
     fig, ax = plt.subplots()

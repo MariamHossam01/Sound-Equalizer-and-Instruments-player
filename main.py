@@ -14,14 +14,14 @@ with st.sidebar:
     show_spectrogram = st.checkbox("Show Spectrogram")
     # ------------------------------------------------------------------------------------ Calling Main Functions
 
-column1,column2,column3=st.columns([1.5,2,2])
+column1,column2,column3=st.columns([4,4,4])
 if uploaded_file is not None:
     file_type = uploaded_file.type
     file_name = uploaded_file.name
     file_extension = file_type[-3:]
     if select_mode == "Uniform Range Mode":
         if file_extension == "wav":
-            fn.uniform_range_mode(column2, column3, uploaded_file, show_spectrogram,file_name)
+            fn.uniform_range_mode(column1,column2, column3, uploaded_file, show_spectrogram,file_name)
 
     elif select_mode == "Music":
          fn.music_control(column2, column3, uploaded_file, show_spectrogram,file_name)
