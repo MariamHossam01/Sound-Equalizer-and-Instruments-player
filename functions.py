@@ -59,7 +59,6 @@ def uniform_range_mode(column2, column3, audio_file, show_spectrogram,file_name)
     signal_x_axis, signal_y_axis, sample_rate= read_audio(audio_file)    # Read Audio File
 
     yf,xf = fourir(signal_x_axis, signal_y_axis)
-    
     points_per_freq = len(xf) / (xf[-1])  # duration
     columns=st.columns(10)
     index=0
