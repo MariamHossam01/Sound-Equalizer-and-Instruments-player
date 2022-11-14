@@ -257,7 +257,7 @@ def Dynamic_graph( signal_x_axis, signal_y_axis,signal_x_axis1, signal_y_axis1,)
         col1,col2,col3 = st.columns(3)
         start_btn  = col1.button(label='Start')
         pause_btn  = col2.button(label='Pause')
-        resume_btn = col3.button(label='resume')
+        resume_btn = col3.button(label='Resume')
         N = df.shape[0]  # number of elements in the dataframe
         burst = 10       # number of elements  to add to the plot
         size = burst     # size of the current dataset
@@ -271,7 +271,6 @@ def Dynamic_graph( signal_x_axis, signal_y_axis,signal_x_axis1, signal_y_axis1,)
                 line_plot = line_plot.altair_chart(lines)
                 variables.graph_size=size
                 size = i * burst 
-                print('start')                    
 
         if resume_btn: 
             
@@ -282,13 +281,11 @@ def Dynamic_graph( signal_x_axis, signal_y_axis,signal_x_axis1, signal_y_axis1,)
                 line_plot = line_plot.altair_chart(lines)
                 variables.graph_size=size
                 size = i * burst
-                print('resume')                
 
         if pause_btn:
             step_df = df.iloc[0:variables.graph_size]
             lines = plot_animation(step_df)
             line_plot = line_plot.altair_chart(lines)
-            print('pause')  
           
 def plot_spectrogram(column,audio_file):
     y, sr = librosa.load(audio_file)
