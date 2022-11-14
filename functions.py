@@ -257,15 +257,11 @@ def plot_animation(df):
             brush)
     return figure
 def Dynamic_graph( signal_x_axis, signal_y_axis, signal_y_axis1,start_btn,pause_btn,resume_btn):
-        df = pd.DataFrame({'time': signal_x_axis[::30], 'amplitude': signal_y_axis[:: 30], 'amplitude after processing': signal_y_axis1[::30]}, columns=['time', 'amplitude','amplitude after processing'])
+        df = pd.DataFrame({'time': signal_x_axis[::1400], 'amplitude': signal_y_axis[:: 1400], 'amplitude after processing': signal_y_axis1[::1400]}, columns=['time', 'amplitude','amplitude after processing'])
 
         lines = plot_animation(df)
         line_plot = st.altair_chart(lines)
 
-        # col1,col2,col3 = st.columns(3)
-        # start_btn  = col1.button(label='Start')
-        # pause_btn  = col2.button(label='Pause')
-        # resume_btn = col3.button(label='Resume')
         N = df.shape[0]  # number of elements in the dataframe
         burst = 10       # number of elements  to add to the plot
         size = burst     # size of the current dataset
@@ -278,7 +274,7 @@ def Dynamic_graph( signal_x_axis, signal_y_axis, signal_y_axis1,start_btn,pause_
                 lines = plot_animation(step_df)
                 line_plot = line_plot.altair_chart(lines)
                 variables.graph_size=size
-                size = i * burst 
+                size = i + burst 
 
         if resume_btn: 
             
@@ -288,7 +284,7 @@ def Dynamic_graph( signal_x_axis, signal_y_axis, signal_y_axis1,start_btn,pause_
                 lines = plot_animation(step_df)
                 line_plot = line_plot.altair_chart(lines)
                 variables.graph_size=size
-                size = i * burst
+                size = i + burst
 
         if pause_btn:
             step_df = df.iloc[0:variables.graph_size]
