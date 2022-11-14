@@ -96,21 +96,11 @@ def music_control(column2, column3, audio_file, show_spectrogram,file_name):
     duration = len(xf) / (xf[-1])  # duration
     while index <=1:
         with columns[index]:
-                   sliders =svs.vertical_slider(key = index,default_value=1, 
-                    step=1, 
-                    min_value=0, 
-                    max_value=2,
-                    slider_color= 'green' #optional
-               
-                    )
+                   sliders =    (vertical_slider(1,1,0,2,index))
+
         index +=1
         list_of_sliders_values_musical .append(sliders)
    
-  
-    # yf[int(10*duration):int(800*duration)]*=list_of_sliders_values_musical [0]     # drums off 1
- 
-    # yf[int(600*duration ):int(14000*duration)]*=list_of_sliders_values_musical [1]     # violion off 2 and piano off
-
     modified_signal,modified_signal_channel =inverse_fourir(yf)   # returns two channels
     
     write(".Equalized_Music2.wav", sample_rate*2,modified_signal_channel)   # creates the modified song
@@ -215,25 +205,19 @@ def plotting_graphs(column,x_axis,y_axis,flag):
     #---------------------------------------- OPTIONAL FUNCTION ------------------------------------------------
 def voice_changer(uploaded_file, column1, column2, column3, show_spectrogram):
 
-    signal_x_axis, signal_y_axis, sample_rate ,sound_info = read_audio(uploaded_file)    # Read Audio File
+    signal_x_axis, signal_y_axis, sample_rate  = read_audio(uploaded_file)    # Read Audio File
 
-    if (show_spectrogram):
-        plot_spectrogram(column2, uploaded_file.name)
-    else:
-        plotting_graphs(column2,signal_x_axis,signal_y_axis,False)
-
-    voice = column1.radio('Voice', options=["Deep Voice", "Smooth Voice"])
+    voice = column1.radio('Voice', options=["Thicker Voice", "Smoother Voice"])
 
     column2.audio(uploaded_file, format="audio/wav")
-
-    if voice == "Deep Voice":
-        empty = column2.empty()
+    if voice == "Thicker Voice":
+        empty = column3.empty()
         empty.empty()
         speed_rate = 1.4
         sampling_rate_factor = 1.4
 
-    elif voice == "Smooth Voice":
-        empty = column2.empty()
+    elif voice == "Smoother Voice":
+        empty = column3.empty()
         empty.empty()
         speed_rate = 0.5
         sampling_rate_factor = 0.5
@@ -241,14 +225,13 @@ def voice_changer(uploaded_file, column1, column2, column3, show_spectrogram):
     loaded_sound_file, sampling_rate = librosa.load(uploaded_file, sr=None)
     loaded_sound_file                = librosa.effects.time_stretch(loaded_sound_file, rate=speed_rate)
 
-    # if (show_spectro):
-    #     plot_spectro(column2, uploaded_file.name)
-    # else:
-    #     plotting_graphs(column2,signal_x_axis,signal_y_axis,False)
-
     song = ipd.Audio(loaded_sound_file, rate = sampling_rate / sampling_rate_factor)
     empty.write(song)
-
+    if(show_spectrogram):
+            plot_spectrogram(column2, uploaded_file.name)
+    else:
+            # plotting_graphs(column2,signal_x_axis,signal_y_axis,False)
+        Dynamic_graph (signal_x_axis,signal_y_axis,signal_x_axis,signal_y_axis)
 #------------------------------------------------- DYNAMIC PLOTTING -----------------------------------------------
 def plot_animation(df):
     brush = alt.selection_interval()
@@ -271,12 +254,10 @@ def Dynamic_graph( signal_x_axis, signal_y_axis,signal_x_axis1, signal_y_axis1,)
         lines = plot_animation(df)
         line_plot = st.altair_chart(lines)
 
-        col1,col2,col3,col4 = st.columns(4)
+        col1,col2,col3 = st.columns(3)
         start_btn  = col1.button(label='Start')
         pause_btn  = col2.button(label='Pause')
         resume_btn = col3.button(label='resume')
-        # stop_btn   = col4.button(label='Stop')
-
         N = df.shape[0]  # number of elements in the dataframe
         burst = 10       # number of elements  to add to the plot
         size = burst     # size of the current dataset
