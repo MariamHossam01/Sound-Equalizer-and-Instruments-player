@@ -14,7 +14,7 @@ with st.sidebar:
     show_spectrogram = st.checkbox("Show Spectrogram")
     # ------------------------------------------------------------------------------------ Calling Main Functions
 
-column1,column2,column3,column4=st.columns([7,2,7,1])
+column1,column2,column3,column4=st.columns([5,0.5,5,1.7])
 
 
 if uploaded_file is not None:
@@ -34,10 +34,12 @@ if uploaded_file is not None:
     elif select_mode == "Arrhythima":
           if file_extension == "csv":
                 fn.ECG_mode(column1,column3,uploaded_file, show_spectrogram)
-    # elif select_mode == "Optional":
-    #     fn.voice_changer(uploaded_file, column1, column2, column3, show_spectrogram,start_btn,pause_btn,resume_btn)
+    elif select_mode == "Optional":
+        fn.voice_changer(column1, column2, column3, show_spectrogram,uploaded_file)
+
 
 
 else:
     st.write('Please upload your signal and select mode.')
 
+# hello

@@ -132,10 +132,9 @@ def music_control(column1,column2, column3, audio_file, show_spectrogram,file_na
         list_of_sliders_values_musical .append(sliders)
    
   
-    yf[int(1*duration):int(1000*duration)]*=list_of_sliders_values_musical [1]     # drums off 1
-    yf*=5
- 
-    yf[int(500*duration ):int(14000*duration)]*=list_of_sliders_values_musical [0]     # violion off 2 and piano off
+    yf[int(500*duration ):int(15000*duration)]*=list_of_sliders_values_musical [0]     # violion off 2 and piano off
+    yf[int(1*duration):int(1800*duration)]*=list_of_sliders_values_musical [1]     # drums off 1 and piano is good # if no drums 1800;2000
+    yf*=2
     modified_signal,modified_signal_channel =inverse_fourir(yf)   # returns two channels
     
     write(".Equalized_Music.wav", sample_rate*2, modified_signal_channel)   # creates the modified song
@@ -263,13 +262,13 @@ def plotting_graphs(column,x_axis,y_axis,flag):
         # plt.ylabel("ECG in mV")     
     column.plotly_chart(fig)
     #---------------------------------------- OPTIONAL FUNCTION ------------------------------------------------
-def voice_changer(uploaded_file, column1, column2, column3, show_spectrogram,start_btn,pause_btn,resume_btn):
+def voice_changer(column1, column2, column3, show_spectrogram,uploaded_file):
 
     signal_x_axis, signal_y_axis, sample_rate  = read_audio(uploaded_file)    # Read Audio File
-
+    column4,column5,column6=st.columns([4,4,4])
     voice = column1.radio('Voice', options=["Thicker Voice", "Smoother Voice"])
 
-    column2.audio(uploaded_file, format="audio/wav")
+    column1.audio(uploaded_file, format="audio/wav")
     if voice == "Thicker Voice":
         empty = column3.empty()
         empty.empty()
@@ -288,11 +287,14 @@ def voice_changer(uploaded_file, column1, column2, column3, show_spectrogram,sta
     song = ipd.Audio(loaded_sound_file, rate = sampling_rate / sampling_rate_factor)
     empty.write(song)
     if(show_spectrogram):
-            plot_spectrogram(column2, uploaded_file.name)
+            plot_spectrogram(column3, uploaded_file.name)
     else:
             # plotting_graphs(column2,signal_x_axis,signal_y_axis,False)
-        
-        Dynamic_graph( signal_x_axis, signal_y_axis, signal_y_axis,start_btn,pause_btn,resume_btn)
+        start_btn  = column4.button(label='Start')
+        pause_btn  = column5.button(label='Pause')
+        resume_btn = column6.button(label='resume')        
+        with column1:
+                Dynamic_graph(signal_x_axis,signal_y_axis,song,start_btn,pause_btn,resume_btn)
 #------------------------------------------------- DYNAMIC PLOTTING -----------------------------------------------
 def plot_animation(df):
     brush = alt.selection_interval()
@@ -423,5 +425,5 @@ def apply_slider_value(x_axis_fourier,y_axis_fourier,sliders_value):
     return(fft_han)
 
 
-
+   # hello 
 

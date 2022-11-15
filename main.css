@@ -306,14 +306,7 @@
 
 
   
-    .css-ocqkz7.e1tzin5v4 {
-        width: 110%;
-        margin-left: -40px;
-        margin-top: -15px;
-        margin-right: -40px;
-         margin-right: -40px;
-    }
-        
+ 
     
     /* .css-zvwavg {
         width: 832px;
@@ -327,14 +320,7 @@
 */
     
    
-.css-ocqkz7.e1tzin5v4 {
-         width: 110%; 
-        margin-left: -40px;
-        margin-top: -15px;
-        margin-right: -40px;
-       
-         margin-top: -15px;
-    }
+
     /* .css-m797a3 {
         width: 574px;
         position: relative;
@@ -356,3 +342,31 @@
      .css-m797a3 .e1tzin5v0{
             margin-top: -500px;
      }
+     .css-18e3th9 {/*shifted all screen up */
+        margin-left: 45px;
+        margin-top: 8px;
+        padding: 3%;
+    }
+    #audio {
+        width: 294px;
+        margin-left: 45px;
+    }
+    .css-1k4smn2 {
+        width: calc(1.92308% - 1rem);
+        flex: 1 1 calc(1.92308% - 1rem);
+        margin-left: 20px;
+    }
+    .css-pvp5gr {
+        width: 352px;
+        position: relative;
+        margin-left: 25px;
+    }
+    .css-ocqkz7.e1tzin5v4 {
+        width: 110%;
+        margin-left: -40px;
+        margin-top: -15px;
+        margin-right: -40px;
+        margin-top: -16px;
+    }
+  
+    /* hello */
