@@ -35,7 +35,7 @@ if uploaded_file is not None:
           if file_extension == "csv":
                 fn.ECG_mode(column1,column3,uploaded_file, show_spectrogram)
     elif select_mode == "Optional":
-        fn.voice_changer(column1, column2, column3, show_spectrogram,uploaded_file)
+        fn.voice_changer(uploaded_file, column1, column2, column3, show_spectrogram)
 
 
 
