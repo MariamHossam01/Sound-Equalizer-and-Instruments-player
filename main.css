@@ -254,13 +254,7 @@
         z-index: 999991;
         margin-left: 0px;
     }
-    .css-ocqkz7.e1tzin5v4 {
-        width: 110%;
-        margin-left: -40px;
-        margin-right: -40px;
-
-        /* margin-right: -40px; */
-    }
+    
     .css-1cpxqw2{
         display: inline-flex;
         -webkit-box-align: center;
@@ -282,14 +276,83 @@
     
         
     }
+
+    /*2222222222222222222*/
+    /* .css-18e3th9 {
+        flex: 1 1 0%;
+        width: 100%;
+        padding: 5%;
+        min-width: auto;
+        max-width: initial;
+    } */
+    .css-ocqkz7.e1tzin5v4 {
+        width: 110%;
+        margin-left: -40px;
+        margin-right: -40px;
+        /* margin-right: -40px;zzz */
+    }
     
-    #audio {
+    /* #audio {
         width: 294px;
         margin-left: 50px;
-       align-items: center;
-    }
-    .css-1r6slb0 {
+        margin-right: -20px;
+        align-items: center;
+    } */
+    /* /* .css-1r6slb0 {
         margin-left: -20px;
         width: calc(33.3333% - 1rem);
-        flex: 1 1 calc(33.3333% - 1rem);
+        flex: 1 1 calc(33.3333% - 1rem); */
+    
+
+
+  
+    .css-ocqkz7.e1tzin5v4 {
+        width: 110%;
+        margin-left: -40px;
+        margin-top: -15px;
+        margin-right: -40px;
+         margin-right: -40px;
     }
+        
+    
+    /* .css-zvwavg {
+        width: 832px;
+        position: relative;
+        display: flex;
+        flex: 1 1 0%;
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: -80px;
+    }
+*/
+    
+   
+.css-ocqkz7.e1tzin5v4 {
+         width: 110%; 
+        margin-left: -40px;
+        margin-top: -15px;
+        margin-right: -40px;
+       
+         margin-top: -15px;
+    }
+    /* .css-m797a3 {
+        width: 574px;
+        position: relative;
+        display: flex;
+        flex: 1 1 0%;
+        flex-direction: column;
+        gap: 1rem;
+        
+    }  */
+    /* .css-18e3th9 {
+        flex: 1 1 0%;
+        width: 100%;
+        padding: 6rem 1rem 10rem;
+        min-width: auto;
+        max-width: initial;
+        margin-top: -40px;
+    }
+     */
+     .css-m797a3 .e1tzin5v0{
+            margin-top: -500px;
+     }

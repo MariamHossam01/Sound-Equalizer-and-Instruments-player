@@ -27,10 +27,12 @@ class variables:
     ecg_yaxis=[]
     ecg_fft=[]
     ecg_samp_rate=0
-    
-    vowel_freq_ae=[860,2850]
-    vowel_freq_a=[850,2800]
-    slider_tuble=(vowel_freq_ae,vowel_freq_a)
+    #--- vowels
+    vowel_freq_range_SH=[2048,5366,'SH']
+    vowel_freq_range_S=[3600,15648,'S']
+    vowel_freq_range_Z=[3587,15000,'Z']
+    vowel_freq_range_J=[2615,13970,'J']
+    vowel_tuble=(vowel_freq_range_SH,vowel_freq_range_S,vowel_freq_range_J,vowel_freq_range_Z)
 
 parent_dir  = os.path.dirname(os.path.abspath(__file__))
 build_dir   = os.path.join(parent_dir, "build")
@@ -62,7 +64,9 @@ def inverse_fourir(yf):
     modified_signal_channel = np.int16(inverse_signal) # returns two channels            # returns the inverse transform a
     return inverse_signal,modified_signal_channel 
 #-------------------------------------- UNIFORM RANGE MODE FUNCTION ----------------------------------------------------
-def uniform_range_mode(column1,column2, column3, audio_file, show_spectrogram,file_name):
+def uniform_range_mode(column1,column2, column3,audio_file, show_spectrogram,file_name):
+    column4,column5,column6=st.columns([4,4,4])
+    
     signal_x_axis, signal_y_axis, sample_rate= read_audio(audio_file)    # Read Audio File
 
     yf,xf = fourir(signal_x_axis, signal_y_axis)
@@ -84,26 +88,33 @@ def uniform_range_mode(column1,column2, column3, audio_file, show_spectrogram,fi
     
     modified_signal,modified_signal_channel =inverse_fourir(yf)   # returns two channels
     
-    write(".Equalized_Music.wav", sample_rate, modified_signal_channel)   # creates the modified song
-    
+    write(".Equalized_Music.wav", sample_rate*2, modified_signal_channel)   # creates the modified song
+    with column1:
+        column1.audio  (audio_file, format='audio/wav') # displaying the audio before editing
+    with column3:
+        column3.audio(".Equalized_Music.wav", format='audio/wav') 
     if (show_spectrogram):
         plot_spectrogram(column1,file_name)
-        plot_spectrogram(column2,".Equalized_Music.wav")
+        plot_spectrogram(column3,".Equalized_Music.wav")
+        # column1.audio  (audio_file, format='audio/wav') # displaying the audio before editing
+        # column3.audio(".Equalized_Music.wav", format='audio/wav') 
     else:
-        start_btn  = column1.button(label='Start')
-        pause_btn  = column2.button(label='Pause')
-        column1.audio  (audio_file, format='audio/wav') # displaying the audio before editing
-        # column2.audio(".Equalized_Music.wav", format='audio/wav')             # displaying the audio after editing
-        resume_btn = column3.button(label='resume')
-        column3.audio(".Equalized_Music.wav", format='audio/wav')             # displaying the audio after editing
-
-        with column1:
-            Dynamic_graph(signal_x_axis,signal_y_axis,modified_signal,start_btn,pause_btn,resume_btn)
-
-    # column2.audio  (audio_file, format='audio/wav') # displaying the audio before editing
-
+        
+            start_btn  = column4.button(label='Start')
+            pause_btn  = column5.button(label='Pause')
+                                                                            # displaying the audio after editing
+            resume_btn = column6.button(label='resume')
+    # column1.audio(".Equalized_Music.wav", format='audio/wav')             # displaying the audio after editing
+            with column1:
+  
+                Dynamic_graph(signal_x_axis,signal_y_axis,modified_signal,start_btn,pause_btn,resume_btn)
+            
+            
+    
+    
 #--------------------------------------Musical Instrument Function -------------------------------------------
 def music_control(column1,column2, column3, audio_file, show_spectrogram,file_name):
+    column4,column5,column6=st.columns([4,4,4])
     signal_x_axis, signal_y_axis, sample_rate  = read_audio(audio_file)    # Read Audio File
     columns=st.columns(2)
     index=0
@@ -118,32 +129,42 @@ def music_control(column1,column2, column3, audio_file, show_spectrogram,file_na
    
   
     yf[int(1*duration):int(1000*duration)]*=list_of_sliders_values_musical [1]     # drums off 1
+    yf*=5
  
     yf[int(500*duration ):int(14000*duration)]*=list_of_sliders_values_musical [0]     # violion off 2 and piano off
     modified_signal,modified_signal_channel =inverse_fourir(yf)   # returns two channels
     
     write(".Equalized_Music.wav", sample_rate*2, modified_signal_channel)   # creates the modified song
-    
+    with column1:
+        column1.audio  (audio_file, format='audio/wav') # displaying the audio before editing
+    with column3:
+        column3.audio(".Equalized_Music.wav", format='audio/wav') 
     if (show_spectrogram):
         plot_spectrogram(column1,file_name)
-        plot_spectrogram(column2,".Equalized_Music.wav")
+        plot_spectrogram(column3,".Equalized_Music.wav")
     else:
-        start_btn  = column1.button(label='Start')
-        pause_btn  = column2.button(label='Pause')
-        column1.audio  (audio_file, format='audio/wav') # displaying the audio before editing
-        # column2.audio(".Equalized_Music.wav", format='audio/wav')             # displaying the audio after editing
-        resume_btn = column3.button(label='resume')
-        column3.audio(".Equalized_Music.wav", format='audio/wav')             # displaying the audio after editing
+            start_btn  = column4.button(label='Start')
+            pause_btn  = column5.button(label='Pause')
+                                                        # displaying the audio before editing
+                                                        # displaying the audio after editing
+            resume_btn = column6.button(label='resume')
+               # displaying the audio after editing
 
-        with column1:
-            Dynamic_graph(signal_x_axis,signal_y_axis,modified_signal,start_btn,pause_btn,resume_btn)
+            with column1:
+                Dynamic_graph(signal_x_axis,signal_y_axis,modified_signal,start_btn,pause_btn,resume_btn)
+       
+           
+                
+            #     column1.audio  (audio_file, format='audio/wav') # displaying the audio before editing
+            # column4.audio(".Equalized_Music.wav", format='audio/wav') 
 #-------------------------------------- ARRYTHMIA FUNCTION ----------------------------------------------------
-def ECG_mode(uploaded_file, show_spectrogram):
+def ECG_mode(column1,column3,uploaded_file, show_spectrogram):
     # ------------ECG Sliders 
-    Arrhythmia=vertical_slider(0,1,-100,100)
+    # Arrhythmia=vertical_slider(0,1,-100,100)
+    Arrhythmia=st.slider('Arrhythmia',min_value =-100,max_value=100,step=1,value=0)
     Arrhythmia/=100 
     # 3 columns input , output ,slider
-    input_col, output_col=st.columns([10,10])
+    # input_col, output_col=st.columns([10,10])
 
     if(variables.ecg_file==''):
         ECG_init(uploaded_file)
@@ -159,9 +180,9 @@ def ECG_mode(uploaded_file, show_spectrogram):
     # Plotting input signal
     if (show_spectrogram):
             pylab.specgram(uploaded_yaxis[50:950], Fs=variables.ecg_samp_rate)
-            input_col.pyplot(pylab)
+            column1.pyplot(pylab)
     else:
-        with input_col:
+        with column1:
             uploaded_fig,uploaded_ax = plt.subplots()
             uploaded_ax.set_title('ECG input ')
             uploaded_ax.plot(uploaded_xaxis[50:950],uploaded_yaxis[50:950])
@@ -174,16 +195,15 @@ def ECG_mode(uploaded_file, show_spectrogram):
     y_inverse_fourier = np.fft.ifft(y_fourier)
     if (show_spectrogram):
             pylab.specgram(np.abs(y_inverse_fourier[50:950]), Fs=variables.ecg_samp_rate)
-            output_col.pyplot(pylab)
+            column3.pyplot(pylab)
     else:
-        with output_col:
+        with column3:
             inverse_fig,inverse_ax = plt.subplots()
             inverse_ax.set_title('ECG output ')
             inverse_ax.plot(uploaded_xaxis[50:950],y_inverse_fourier[50:950])  
             inverse_ax.set_xlabel('Time ')
             inverse_ax.set_ylabel('Amplitude (mv)')
             st.plotly_chart(inverse_fig)
-
 def ECG_init(uploaded_file):
     # Reading uploaded_file
     variables.ecg_file=uploaded_file
@@ -209,7 +229,6 @@ def ECG_init(uploaded_file):
     variables.ecg_xaxis=uploaded_xaxis
     variables.ecg_yaxis=uploaded_yaxis
     variables.ecg_samp_rate=samp_rate
-
 def arrhythmia (arrhythmia,y_fourier):
     new_y=y_fourier
     # reading arrhhytmia component
@@ -242,7 +261,7 @@ def plotting_graphs(column,x_axis,y_axis,flag):
         # plt.ylabel("ECG in mV")     
     column.plotly_chart(fig)
     #---------------------------------------- OPTIONAL FUNCTION ------------------------------------------------
-def voice_changer(uploaded_file, column1, column2, column3, show_spectrogram):
+def voice_changer(uploaded_file, column1, column2, column3, show_spectrogram,start_btn,pause_btn,resume_btn):
 
     signal_x_axis, signal_y_axis, sample_rate  = read_audio(uploaded_file)    # Read Audio File
 
@@ -270,7 +289,8 @@ def voice_changer(uploaded_file, column1, column2, column3, show_spectrogram):
             plot_spectrogram(column2, uploaded_file.name)
     else:
             # plotting_graphs(column2,signal_x_axis,signal_y_axis,False)
-        Dynamic_graph (signal_x_axis,signal_y_axis,signal_x_axis,signal_y_axis)
+        
+        Dynamic_graph( signal_x_axis, signal_y_axis, signal_y_axis,start_btn,pause_btn,resume_btn)
 #------------------------------------------------- DYNAMIC PLOTTING -----------------------------------------------
 def plot_animation(df):
     brush = alt.selection_interval()
@@ -332,41 +352,68 @@ def plot_spectrogram(column,file_name):
     fig.colorbar(img, ax=ax, format="%+2.f dB")
     column.pyplot(fig)
 
-def vowels_mode(uploaded_file,column_in,column_out):
-    ae_freq_value=st.slider('ae',min_value=0,max_value=1,value=1,key=1)
-    a_freq_value=st.slider('ae',min_value=0,max_value=1,value=1,key=2)
+
+#-------------------------------------- Vowels FUNCTION ----------------------------------------------------
+
+def vowels_mode(column1,column2,column3,uploaded_file,show_spectrogram):
+    column4,column5,column6=st.columns([4,4,4])
     signal_x_axis, signal_y_axis, sample_rate = read_audio(uploaded_file)    # Read Audio File
 
     y_axis_fourier,x_axis_fourier = fourir(signal_x_axis, signal_y_axis)
-   
+    sliders_value=[]
 
-    # y_axis_fourier = np.fft.fft(signal_y_axis)                       
-    # x_axis_fourier = np.fft.fftfreq(len(signal_y_axis), (signal_x_axis[1]-signal_x_axis[0]))
-    st.write(len(y_axis_fourier))
+    columns=st.columns(4)
+    index=0
+
+
+    while index <=3:
+        with columns[index]:
+                   sliders =  (vertical_slider(1,0.2,0,2,index))
+        index +=1
+        sliders_value.append(sliders)
+
+
+    # for i in variables.vowel_tuble:
+        
+    #     sliders_value.append( vertical_slider(1,0.2,0,2,i[-1]))
     
-    filtered_fft=apply_slider_value(x_axis_fourier,y_axis_fourier,ae_freq_value,a_freq_value)
-    st.write(len(filtered_fft))
-
+    filtered_fft=apply_slider_value(x_axis_fourier,y_axis_fourier,sliders_value)
+    
     inverse,modified_signal_channel =inverse_fourir(filtered_fft,)   # returns two channels
-    # inverse=(np.fft.ifft(filtered_fft,))
-    plotting_graphs(column_in,signal_x_axis,signal_y_axis)
-    plotting_graphs(column_out,x_axis_fourier*2,np.real(inverse))
-    wavio.write("myfile.wav", inverse, sample_rate//2, sampwidth=1)
-    st.audio("myfile.wav", format='audio/wav')
+    
+    column1.audio(uploaded_file, format='audio/wav')
+    wavio.write("filtered_word.wav", inverse, sample_rate*2, sampwidth=1)
+    column3.audio("filtered_word.wav", format='audio/wav')
+    column3.write(' ')
+    column3.write(' ')
+    # if show_spectrogram:
+    #     plot_spectrogram(column1,uploaded_file.name)
+    #     plot_spectrogram(column3,"filtered_word.wav")
+    # else:
+    start_btn  = column4.button(label='Start')
+    pause_btn  = column5.button(label='Pause')
+    # column2.audio(".Equalized_Music.wav", format='audio/wav')             # displaying the audio after editing
+    resume_btn = column6.button(label='resume')
+        
 
-def apply_slider_value(x_axis_fourier,y_axis_fourier,ae_freq_value,a_freq_value):
-    ae_freq_value = 0.01 if ae_freq_value == 0 else ae_freq_value 
-    a_freq_value = 0.01 if a_freq_value == 0 else a_freq_value 
-    slider_values=[ae_freq_value,a_freq_value]
-    filtered_fft=y_axis_fourier
-    for slider_counter in range(len(slider_values)):
-        min_value=variables.slider_tuble[slider_counter][0]
-        max_value=variables.slider_tuble[slider_counter][1]
-        for i in range(len(x_axis_fourier)):
-            if min_value<=x_axis_fourier[i]<=max_value:#ae
-                filtered_fft[i]+=y_axis_fourier[i]*slider_values[slider_counter]
-            else:
-                filtered_fft[i]+=y_axis_fourier[i]*1000
-    return(filtered_fft/3)
+    with column1:
+            Dynamic_graph(signal_x_axis,signal_y_axis,inverse,start_btn,pause_btn,resume_btn)
+
+def apply_slider_value(x_axis_fourier,y_axis_fourier,sliders_value):
+    fft_han=y_axis_fourier.copy()
+    for counter in range(len(sliders_value)):
+        if  not sliders_value[counter]==1:
+            range_list=[]
+            for index in range(len(x_axis_fourier)):
+                if variables.vowel_tuble[counter][0]<x_axis_fourier[index]<variables.vowel_tuble[counter][1]:
+                    range_list.append(x_axis_fourier[index])
+            range_of_freq=np.where(x_axis_fourier==max(range_list))[0][0]-np.where(x_axis_fourier==min(range_list))[0][0]
+            han_value=(1-np.hanning(range_of_freq+1))* sliders_value[counter]   
+            for counter in range(range_of_freq):
+                fft_han[int(counter+np.where(x_axis_fourier==min(range_list))[0][0])]*=han_value[counter]
+
+    return(fft_han)
+
+
 
 
