@@ -28,11 +28,15 @@ class variables:
     ecg_fft=[]
     ecg_samp_rate=0
     #--- vowels
-    vowel_freq_range_SH=[2048,5366,'SH']
-    vowel_freq_range_S=[3600,15648,'S']
-    vowel_freq_range_Z=[3587,15000,'Z']
-    vowel_freq_range_J=[2615,13970,'J']
-    vowel_tuble=(vowel_freq_range_SH,vowel_freq_range_S,vowel_freq_range_J,vowel_freq_range_Z)
+    vowel_freq_range_SH=[1850,5600,'SH']
+    vowel_freq_range_S=[4951,8000,'S']
+    vowel_freq_range_CH=[4018,8000,'CH']
+    vowel_freq_range_T=[1530,8000,'T']
+    vowel_tuble=(vowel_freq_range_SH,vowel_freq_range_S,vowel_freq_range_CH,vowel_freq_range_T)
+    vowel_old_file=None
+    vowel_used_file_fft=[]
+    vowel_used_file_fftfreq=[]
+    vowel_used_file_sample_rate=0
 
 parent_dir  = os.path.dirname(os.path.abspath(__file__))
 build_dir   = os.path.join(parent_dir, "build")
@@ -40,7 +44,7 @@ _vertical_slider = components.declare_component("vertical_slider", path=build_di
 
 
 def vertical_slider(value, step, min=min, max=max, key=None):
-    slider_value = _vertical_slider(value=value,step=step, min=min, max=max, key=key, default=value)
+    slider_value = _vertical_slider(value=value,step=step, min=min, max=max, key=key, default=value,)
     return slider_value
 #------------------------------------------- Reading Audio ----------------------------------------------------------- 
 def read_audio(audio_file):
@@ -356,46 +360,52 @@ def plot_spectrogram(column,file_name):
 def vowels_mode(column1,column2,column3,uploaded_file,show_spectrogram):
     column4,column5,column6=st.columns([4,4,4])
     signal_x_axis, signal_y_axis, sample_rate = read_audio(uploaded_file)    # Read Audio File
-
-    y_axis_fourier,x_axis_fourier = fourir(signal_x_axis, signal_y_axis)
-    sliders_value=[]
-
+    if uploaded_file==variables.vowel_old_file:  #check if file hasn't changed use the computed fft
+        y_axis_fourier=variables.vowel_used_file_fft
+        sample_rate=variables.vowel_used_file_sample_rate
+        x_axis_fourier=variables.vowel_used_file_fftfreq
+        print('olddddddddddddddddddddddddddddddddddddddddddddddddddddd')
+    else:
+        y_axis_fourier,x_axis_fourier = fourir(signal_x_axis, signal_y_axis)
+        variables.vowel_old_file=uploaded_file
+        variables.vowel_used_file_fft=y_axis_fourier
+        variables.vowel_used_file_sample_rate=sample_rate
+        variables.vowel_used_file_fftfreq=x_axis_fourier
+        print('newwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww')
+    
+    
+    sliders_value=[]        #write four variables
     columns=st.columns(4)
     index=0
-
-
     while index <=3:
         with columns[index]:
                    sliders =  (vertical_slider(1,0.2,0,2,index))
         index +=1
         sliders_value.append(sliders)
 
-
-    # for i in variables.vowel_tuble:
-        
-    #     sliders_value.append( vertical_slider(1,0.2,0,2,i[-1]))
     
     filtered_fft=apply_slider_value(x_axis_fourier,y_axis_fourier,sliders_value)
     
+
+
     inverse,modified_signal_channel =inverse_fourir(filtered_fft,)   # returns two channels
     
     column1.audio(uploaded_file, format='audio/wav')
-    wavio.write("filtered_word.wav", inverse, sample_rate*2, sampwidth=1)
+    wavio.write("filtered_word.wav", inverse, sample_rate, sampwidth=1)
     column3.audio("filtered_word.wav", format='audio/wav')
     column3.write(' ')
     column3.write(' ')
-    # if show_spectrogram:
-    #     plot_spectrogram(column1,uploaded_file.name)
-    #     plot_spectrogram(column3,"filtered_word.wav")
-    # else:
-    start_btn  = column4.button(label='Start')
-    pause_btn  = column5.button(label='Pause')
-    # column2.audio(".Equalized_Music.wav", format='audio/wav')             # displaying the audio after editing
-    resume_btn = column6.button(label='resume')
+    if show_spectrogram:
+        plot_spectrogram(column1,uploaded_file.name)
+        plot_spectrogram(column3,"filtered_word.wav")
+    else:
+        start_btn  = column4.button(label='Start')
+        pause_btn  = column5.button(label='Pause')
+        resume_btn = column6.button(label='resume')
         
 
-    with column1:
-            Dynamic_graph(signal_x_axis,signal_y_axis,inverse,start_btn,pause_btn,resume_btn)
+        with column1:
+                Dynamic_graph(signal_x_axis,signal_y_axis,inverse,start_btn,pause_btn,resume_btn)
 
 def apply_slider_value(x_axis_fourier,y_axis_fourier,sliders_value):
     fft_han=y_axis_fourier.copy()
