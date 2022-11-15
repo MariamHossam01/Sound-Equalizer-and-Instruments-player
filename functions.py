@@ -17,10 +17,17 @@ import streamlit.components.v1 as components
 import IPython.display as ipd
 
 class variables:
+    #-------- dynamic
     points_num=1000
     start=0
     graph_size=0
-
+    #--------ecg
+    ecg_file=''
+    ecg_xaxis=[]
+    ecg_yaxis=[]
+    ecg_fft=[]
+    ecg_samp_rate=0
+    
     vowel_freq_ae=[860,2850]
     vowel_freq_a=[850,2800]
     slider_tuble=(vowel_freq_ae,vowel_freq_a)
@@ -132,28 +139,26 @@ def music_control(column1,column2, column3, audio_file, show_spectrogram,file_na
             Dynamic_graph(signal_x_axis,signal_y_axis,modified_signal,start_btn,pause_btn,resume_btn)
 #-------------------------------------- ARRYTHMIA FUNCTION ----------------------------------------------------
 def ECG_mode(uploaded_file, show_spectrogram):
-
     # ------------ECG Sliders 
     Arrhythmia=vertical_slider(0,1,-100,100)
     Arrhythmia/=100 
     # 3 columns input , output ,slider
-    input_col, output_col,slider_col=st.columns([10,10,2])
+    input_col, output_col=st.columns([10,10])
 
-    # Reading uploaded_file
-    df = pd.read_csv(uploaded_file)
-    uploaded_xaxis=df['time']
-    uploaded_yaxis=df['amp']
-    smap_time=uploaded_xaxis[1]-uploaded_xaxis[0]
-    samp_rate=1/smap_time
+    if(variables.ecg_file==''):
+        ECG_init(uploaded_file)
+    elif (variables.ecg_file==uploaded_file): 
+            pass
+    else:
+        ECG_init(uploaded_file)
 
-    # Slicing big data
-    if (len(uploaded_xaxis)>variables.points_num):
-        uploaded_xaxis=uploaded_xaxis[:variables.points_num]
-    if (len(uploaded_yaxis)>variables.points_num):
-        uploaded_yaxis=uploaded_yaxis[:variables.points_num]
+
+    uploaded_xaxis=variables.ecg_xaxis
+    uploaded_yaxis=variables.ecg_yaxis
+    y_fourier=variables.ecg_fft
     # Plotting input signal
     if (show_spectrogram):
-            pylab.specgram(uploaded_yaxis[50:950], Fs=samp_rate)
+            pylab.specgram(uploaded_yaxis[50:950], Fs=variables.ecg_samp_rate)
             input_col.pyplot(pylab)
     else:
         with input_col:
@@ -163,16 +168,12 @@ def ECG_mode(uploaded_file, show_spectrogram):
             uploaded_ax.set_xlabel('Time ')
             uploaded_ax.set_ylabel('Amplitude (mv)')
             st.plotly_chart(uploaded_fig)
-
-    # fourier transorm
-    y_fourier,xf = fourir(uploaded_xaxis, uploaded_yaxis)
-    # y_fourier = np.fft.fft(uploaded_yaxis)
-    
+    # signal after modification (adding,removing arrhythmia)
     y_fourier=arrhythmia (Arrhythmia,y_fourier)
+    # Plotting output graph after modification
     y_inverse_fourier = np.fft.ifft(y_fourier)
-
     if (show_spectrogram):
-            pylab.specgram(np.abs(y_inverse_fourier[50:950]), Fs=samp_rate)
+            pylab.specgram(np.abs(y_inverse_fourier[50:950]), Fs=variables.ecg_samp_rate)
             output_col.pyplot(pylab)
     else:
         with output_col:
@@ -182,7 +183,33 @@ def ECG_mode(uploaded_file, show_spectrogram):
             inverse_ax.set_xlabel('Time ')
             inverse_ax.set_ylabel('Amplitude (mv)')
             st.plotly_chart(inverse_fig)
-        
+
+def ECG_init(uploaded_file):
+    # Reading uploaded_file
+    variables.ecg_file=uploaded_file
+    df = pd.read_csv(uploaded_file)
+    uploaded_xaxis=df['time']
+    uploaded_yaxis=df['amp']
+
+    smap_time=uploaded_xaxis[1]-uploaded_xaxis[0]
+    samp_rate=1/smap_time
+
+    # Slicing big data
+    if (len(uploaded_xaxis)>variables.points_num):
+        uploaded_xaxis=uploaded_xaxis[:variables.points_num]
+    if (len(uploaded_yaxis)>variables.points_num):
+        uploaded_yaxis=uploaded_yaxis[:variables.points_num]
+    # fourier transorm
+    y_fourier = np.fft.fft(uploaded_yaxis)
+    variables.ecg_fft=y_fourier
+    # fourier transorm
+    y_fourier = np.fft.fft(uploaded_yaxis)
+    # updatting
+    variables.ecg_fft=y_fourier
+    variables.ecg_xaxis=uploaded_xaxis
+    variables.ecg_yaxis=uploaded_yaxis
+    variables.ecg_samp_rate=samp_rate
+
 def arrhythmia (arrhythmia,y_fourier):
     new_y=y_fourier
     # reading arrhhytmia component
