@@ -179,13 +179,13 @@ def ECG_mode(column1,column3,uploaded_file, show_spectrogram):
     y_fourier=variables.ecg_fft
     # Plotting input signal
     if (show_spectrogram):
-            pylab.specgram(uploaded_yaxis[50:950], Fs=variables.ecg_samp_rate)
+            pylab.specgram(uploaded_yaxis, Fs=360)
             column1.pyplot(pylab)
     else:
         with column1:
             uploaded_fig,uploaded_ax = plt.subplots()
             uploaded_ax.set_title('ECG input ')
-            uploaded_ax.plot(uploaded_xaxis[50:950],uploaded_yaxis[50:950])
+            uploaded_ax.plot(uploaded_xaxis,uploaded_yaxis)
             uploaded_ax.set_xlabel('Time ')
             uploaded_ax.set_ylabel('Amplitude (mv)')
             st.plotly_chart(uploaded_fig)
@@ -194,13 +194,13 @@ def ECG_mode(column1,column3,uploaded_file, show_spectrogram):
     # Plotting output graph after modification
     y_inverse_fourier = np.fft.ifft(y_fourier)
     if (show_spectrogram):
-            pylab.specgram(np.abs(y_inverse_fourier[50:950]), Fs=variables.ecg_samp_rate)
+            pylab.specgram(np.abs(y_inverse_fourier), Fs=360)
             column3.pyplot(pylab)
     else:
         with column3:
             inverse_fig,inverse_ax = plt.subplots()
             inverse_ax.set_title('ECG output ')
-            inverse_ax.plot(uploaded_xaxis[50:950],y_inverse_fourier[50:950])  
+            inverse_ax.plot(uploaded_xaxis,y_inverse_fourier)  
             inverse_ax.set_xlabel('Time ')
             inverse_ax.set_ylabel('Amplitude (mv)')
             st.plotly_chart(inverse_fig)
@@ -233,8 +233,8 @@ def arrhythmia (arrhythmia,y_fourier):
     new_y=y_fourier
     # reading arrhhytmia component
     df = pd.read_csv('arrhythmia_components.csv')
-    sub=df['sub'][0:variables.points_num]
-    abs_sub=df['abs_sub']
+    sub=df['amp_fft'][0:variables.points_num]
+
     
     # converting string to complex
     for index in np.arange(0,len(sub)):
@@ -244,8 +244,6 @@ def arrhythmia (arrhythmia,y_fourier):
     for index in np.arange(0,len(weighted_arrhythmia)):
         weighted_arrhythmia[index]=sub[index]* complex(arrhythmia)*(-1)
     # addinh weighted arrhythmia and uploaded complex amp
-
-    # result = [item * arrhythmia for item in sub]
     new_y=np.add(y_fourier,weighted_arrhythmia)
 
     return new_y
