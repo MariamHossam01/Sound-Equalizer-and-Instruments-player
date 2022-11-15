@@ -24,7 +24,7 @@ if uploaded_file is not None:
             fn.uniform_range_mode(column1,column2, column3, uploaded_file, show_spectrogram,file_name)
 
     elif select_mode == "Music":
-         fn.music_control(column2, column3, uploaded_file, show_spectrogram,file_name)
+         fn.music_control(column1,column2, column3, uploaded_file ,show_spectrogram,file_name)
     elif select_mode == "Vowels":
         if file_extension == "wav":
             fn.vowels_mode(uploaded_file,column2,column3)

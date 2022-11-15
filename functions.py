@@ -94,8 +94,9 @@ def uniform_range_mode(column1,column2, column3, audio_file, show_spectrogram,fi
             Dynamic_graph(signal_x_axis,signal_y_axis,modified_signal,start_btn,pause_btn,resume_btn)
 
     # column2.audio  (audio_file, format='audio/wav') # displaying the audio before editing
+
 #--------------------------------------Musical Instrument Function -------------------------------------------
-def music_control(column2, column3, audio_file, show_spectrogram,file_name):
+def music_control(column1,column2, column3, audio_file, show_spectrogram,file_name):
     signal_x_axis, signal_y_axis, sample_rate  = read_audio(audio_file)    # Read Audio File
     columns=st.columns(2)
     index=0
@@ -104,28 +105,31 @@ def music_control(column2, column3, audio_file, show_spectrogram,file_name):
     duration = len(xf) / (xf[-1])  # duration
     while index <=1:
         with columns[index]:
-                   sliders =    (vertical_slider(1,1,0,2,index))
-
+                   sliders =  (vertical_slider(1,1,0,2,index))
         index +=1
         list_of_sliders_values_musical .append(sliders)
    
+  
+    yf[int(1*duration):int(1000*duration)]*=list_of_sliders_values_musical [1]     # drums off 1
+ 
+    yf[int(500*duration ):int(14000*duration)]*=list_of_sliders_values_musical [0]     # violion off 2 and piano off
     modified_signal,modified_signal_channel =inverse_fourir(yf)   # returns two channels
     
-    write(".Equalized_Music2.wav", sample_rate*2,modified_signal_channel)   # creates the modified song
-    
+    write(".Equalized_Music.wav", sample_rate*2, modified_signal_channel)   # creates the modified song
     
     if (show_spectrogram):
-
-        plot_spectrogram(column2,file_name)
-        plot_spectrogram(column3,".Equalized_Music2.wav")
-
-   
+        plot_spectrogram(column1,file_name)
+        plot_spectrogram(column2,".Equalized_Music.wav")
     else:
-  
-        Dynamic_graph(signal_x_axis,signal_y_axis,signal_x_axis,modified_signal )
+        start_btn  = column1.button(label='Start')
+        pause_btn  = column2.button(label='Pause')
+        column1.audio  (audio_file, format='audio/wav') # displaying the audio before editing
+        # column2.audio(".Equalized_Music.wav", format='audio/wav')             # displaying the audio after editing
+        resume_btn = column3.button(label='resume')
+        column3.audio(".Equalized_Music.wav", format='audio/wav')             # displaying the audio after editing
 
-    column2.audio  (audio_file, format='audio/wav') # displaying the audio before editing
-    column3.audio(".Equalized_Music2.wav", format='audio/wav')             # displaying the audio after editing
+        with column1:
+            Dynamic_graph(signal_x_axis,signal_y_axis,modified_signal,start_btn,pause_btn,resume_btn)
 #-------------------------------------- ARRYTHMIA FUNCTION ----------------------------------------------------
 def ECG_mode(uploaded_file, show_spectrogram):
 
