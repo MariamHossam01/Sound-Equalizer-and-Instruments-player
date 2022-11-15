@@ -266,7 +266,7 @@ def voice_changer(column1, column2, column3, show_spectrogram,uploaded_file):
 
     signal_x_axis, signal_y_axis, sample_rate  = read_audio(uploaded_file)    # Read Audio File
     column4,column5,column6=st.columns([4,4,4])
-    voice = column1.radio('Voice', options=["Thicker Voice", "Smoother Voice"])
+    voice = st.sidebar.radio('Voice', options=["Thicker Voice", "Smoother Voice"])
 
     column1.audio(uploaded_file, format="audio/wav")
     if voice == "Thicker Voice":
