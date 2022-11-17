@@ -14,8 +14,8 @@ with st.sidebar:
     show_spectrogram = st.checkbox("Show Spectrogram")
     # ------------------------------------------------------------------------------------ Calling Main Functions
 
-column1,column2,column3,column4=st.columns([5,0.5,5,1.7])
-
+column1,column2,column3,column4=st.columns([5,0.3,5,2.2])
+column5,column6, column7=st.columns([4,4,4])
 
 if uploaded_file is not None:
     file_type = uploaded_file.type
@@ -23,23 +23,24 @@ if uploaded_file is not None:
     file_extension = file_type[-3:]
     if select_mode == "Uniform Range Mode":
         if file_extension == "wav":
-            fn.uniform_range_mode(column1,column2, column3,uploaded_file, show_spectrogram,file_name)
+            fn.uniform_range_mode(column1,column2, column3,column5,column6, column7,uploaded_file, show_spectrogram,file_name)
 
     elif select_mode == "Music":
-         fn.music_control(column1,column2, column3, uploaded_file ,show_spectrogram,file_name)
+         fn.music_control(column1,column2, column3,column5,column6, column7, uploaded_file ,show_spectrogram,file_name)
     elif select_mode == "Vowels":
         if file_extension == "wav":
-            fn.vowels_mode(column1,column2,column3,uploaded_file,show_spectrogram)
+            fn.vowels_mode(column1,column3,column5,column6, column7,uploaded_file,show_spectrogram)
 
     elif select_mode == "Arrhythima":
           if file_extension == "csv":
                 fn.ECG_mode(column1,column3,uploaded_file, show_spectrogram)
     elif select_mode == "Optional":
-        fn.voice_changer(uploaded_file, column1, column2, column3, show_spectrogram)
+        fn.voice_changer(column1,column5,file_name, show_spectrogram)
 
 
 
 else:
-    st.write('Please upload your signal and select mode.')
+    pass
+    #   st.write('Please upload your signal and select mode.')
 
 # hello
