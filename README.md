@@ -25,7 +25,7 @@
 ## Project Modes
 1.  __Uniform Range Mode__
     - using 10 sliders you can control the amplitude of a range of frequencies
-    ![UNIFORM_MODE](images\uniform.png)
+    ![UNIFORM_MODE](images\\uniform.png)
     ![UNIFORM_MODE](images\uniform_spectrogram.png)
 2.  __Music Mode__
     - using 2 sliders you can remove or increase the sound of both violin/piano and the drums
