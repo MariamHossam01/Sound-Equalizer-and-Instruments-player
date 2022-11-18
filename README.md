@@ -37,7 +37,7 @@
     >![VOWELs_MODE](images\vowel_spectrogram.png)
 1.  __Arrythmia Mod__
     - add arrythmia to a normal ECG
-    >![ARRYTHMIA_MODE](images\medical_arrythmia.png)
+    >![images\medical_arrythmia.png](https://imgur.com/a/RqrILbj)
     >![ARRYTHMIA_MODE](images\medical_arrythmia_spectrogram.png)
 
     - remove arrythmia from an abnormal ECG
