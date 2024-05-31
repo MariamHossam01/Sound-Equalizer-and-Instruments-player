@@ -3,15 +3,6 @@
 # Equalizer
 
 
-## Team Members:
-> Name------------------Section-------BN
-* Bassant Medhat--------------------   1   -------21
-* Mariam Hossam El-Dien-----------   2   -------31
-* Mariam Mohammed Mahmoud--- 2   -------34
-* Mariam Mounir--------------------- 2  -------35
->
-
-
 ## The Project:
 * It contains 5 modes
     * Uniform Range Mode
@@ -43,3 +34,14 @@
     - remove arrythmia from an abnormal ECG
     >![ARRYTHMIA_MODE](/images/medical_Noarrythmia.png)
     >![ARRYTHMIA_MODE](/images/medical_Noarrythmia_spectrogram.png)
+
+
+## Team Members:
+> Name------------------Section-------BN
+* Bassant Medhat--------------------   1   -------21
+* Mariam Hossam El-Dien-----------   2   -------31
+* Mariam Mohammed Mahmoud--- 2   -------34
+* Mariam Mounir--------------------- 2  -------35
+>
+
+
